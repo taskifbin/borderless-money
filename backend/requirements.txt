@@ -1,15 +1,5 @@
-# Borderless Money backend — core (required)
-fastapi>=0.110
-uvicorn[standard]>=0.29
-pydantic>=2.6
-
-# --- Optional engines (the API degrades gracefully without them) -----------
-# LangGraph orchestrator (falls back to an identical sequential runner)
-# langgraph>=0.2
-# Corridor graph scoring (falls back to pure-Python enumeration)
-# networkx>=3.3
-# GNN RegTech production model (falls back to deterministic stand-in)
-# torch>=2.2
-# torch_geometric>=2.5
-# Real Stellar testnet settlement (falls back to simulated, labeled hash)
-# stellar-sdk>=9.0
+# Borderless Money backend — canonical install pointer.
+#   requirements-lite.txt: fast API + graceful fallbacks (make smoke)
+#   requirements-full.txt: everything the README describes (Docker/CI use this)
+# See REAL_VS_SIMULATED.md for what each fallback changes.
+-r requirements-full.txt

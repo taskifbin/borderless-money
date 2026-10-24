@@ -1,0 +1,24 @@
+# Borderless Money — full system (backend + frontend) via `docker compose up`
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - BORDERLESS_MONEY_CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+      # Optional bounded-LLM assist (off unless a key is provided):
+      # - BORDERLESS_MONEY_LLM_API_KEY=${BORDERLESS_MONEY_LLM_API_KEY}
+      # - BORDERLESS_MONEY_LLM_MODEL=gpt-4o-mini
+
+  frontend:
+    image: node:20-slim
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "3000:3000"
+    command: sh -c "npm install --no-audit --no-fund && npm run build && npm run start"
+    environment:
+      - NEXT_PUBLIC_API_BASE=http://localhost:8000
+    depends_on:
+      - backend

@@ -50,6 +50,8 @@ const en = {
   blockPrev: "Previous block",
   blockYours: "Your transfer",
   blockNext: "Next block",
+  llmAssistOn: "LLM assist: on",
+  llmAssistOff: "LLM assist: off (deterministic mode)",
 };
 
 const bn: typeof en = {
@@ -101,6 +103,8 @@ const bn: typeof en = {
   blockPrev: "পূর্ববর্তী ব্লক",
   blockYours: "আপনার লেনদেন",
   blockNext: "পরবর্তী ব্লক",
+  llmAssistOn: "এলএলএম সহায়তা: চালু",
+  llmAssistOff: "এলএলএম সহায়তা: বন্ধ (নির্ধারিত মোড)",
 };
 
 export const STRINGS: Record<Lang, typeof en> = { en, bn };

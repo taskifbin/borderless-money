@@ -110,11 +110,14 @@ class TestCompliance(unittest.TestCase):
             "created_at": "2026-10-24T14:30:05Z",
             "sender_name": "Mohammed Rafiq",
             "recipient_name": "Ayesha Begum",
-            "breakdown": {"true_net_receive_bdt": 33488.8},
+            "breakdown": {"true_net_receive_bdt": 33488.8, "govt_incentive_added_bdt": 820.0},
         }
         msg = compliance.to_pacs_008(tx)
         self.assertEqual(msg["IntrBkSttlmAmt"]["Ccy"], "BDT")
-        self.assertEqual(msg["IntrBkSttlmAmt"]["Value"], "33488.80")
+        # settlement amount = gross - fees = true net MINUS the incentive,
+        # which the government pays separately (docs/pacs008-subset.md)
+        self.assertEqual(msg["IntrBkSttlmAmt"]["Value"], "32668.80")
+        self.assertEqual(msg["GovtIncentiveAmt"]["Value"], "820.00")
         self.assertLessEqual(len(msg["MsgId"]), 16)
 
 

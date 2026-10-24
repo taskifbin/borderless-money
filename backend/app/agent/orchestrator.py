@@ -214,10 +214,9 @@ def execute_node(state: AgentState) -> dict:
     amount = state.get("amount") or config.DEFAULT_AMOUNT
     breakdown = route.get("breakdown", {})
 
-    execution = stellar.execute_path_payment(route.get("name", ""), amount)
-    network_note = ("settled on Stellar TESTNET" if execution["network"] == "TESTNET"
-                    else "settled via SIMULATED Stellar hash (testnet SDK/keys not configured)")
-    log.append(f"Execution: route {route.get('name')} {network_note}.")
+    execution = stellar.simulate_settlement(route.get("name", ""), amount)
+    log.append(f"Execution: route {route.get('name')} settled via SIMULATED hash "
+               f"(labeled; no testnet credentials configured — see REAL_VS_SIMULATED.md).")
 
     corr = corridor_cfg.load_corridor(state.get("corridor", corridor_cfg.DEFAULT_CORRIDOR))
     sender = corr.get("demo_sender", config.DEMO_SENDER)

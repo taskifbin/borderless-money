@@ -1,0 +1,17 @@
+# Borderless Money backend — FULL install (what the README describes)
+# Everything here is optional at runtime (graceful fallbacks) but the full
+# system — LangGraph orchestration, PyG risk model, embeddings — needs these.
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.6
+
+langgraph>=0.2
+networkx>=3.3
+
+# CPU torch wheels keep the image ~10x smaller than the CUDA default.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.2
+torch_geometric>=2.5
+
+# Optional embeddings for the regulatory RAG (lexical fallback otherwise)
+sentence-transformers>=2.7

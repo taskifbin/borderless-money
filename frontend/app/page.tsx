@@ -27,6 +27,7 @@ export default function Home() {
   const [result, setResult] = useState<AgentStateResponse | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [llmOn, setLlmOn] = useState(false);
   const t = STRINGS[lang];
 
   useEffect(() => {
@@ -35,6 +36,11 @@ export default function Home() {
     const s = new URLSearchParams(window.location.search).get("scenario");
     if (s === "fuzzy" || s === "fuzzy_review") setScenario("fuzzy_review");
     else if (s === "high_risk") setScenario("high_risk");
+    // honesty label: surface whether the bounded-LLM assist is configured
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000"}/api/health`)
+      .then((r) => r.json())
+      .then((h) => setLlmOn(Boolean(h?.engines?.llm_fallback)))
+      .catch(() => setLlmOn(false));
   }, []);
 
   const switchLang = (l: Lang) => {
@@ -187,7 +193,8 @@ export default function Home() {
       </details>
 
       {scenario !== "default" && <p className="mt-6 text-[12px] text-review">Simulating scenario: {scenario}</p>}
-      <footer className="mt-16 text-[12px] text-muted">
+      <p className="mt-2 text-[12px] text-muted">{llmOn ? t.llmAssistOn : t.llmAssistOff}</p>
+      <footer className="mt-4 text-[12px] text-muted">
         Demo scenarios:{" "}
         {SCENARIO_LINKS.map((s, i) => (
           <span key={s.param}>

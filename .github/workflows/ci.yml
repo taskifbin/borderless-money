@@ -1,0 +1,58 @@
+# CI: fresh checkout → full install → all gates.
+# (Runs on GitHub; the same commands pass locally via `make ci-local`.)
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install full requirements
+        working-directory: backend
+        run: pip install -r requirements-full.txt
+
+      - name: Smoke gate (imports + end-to-end pipeline)
+        run: python backend/tests/test_smoke.py
+
+      - name: Unit tests
+        run: python backend/tests/test_core.py
+        env:
+          USE_TRAINED_GNN: "false"
+
+      - name: Step suites
+        run: |
+          python backend/tests/test_step3.py
+          python backend/tests/test_step4.py
+
+      - name: Sanctions benchmark
+        run: python backend/evals/eval_sanctions.py
+
+      - name: RAG retrieval benchmark
+        run: python backend/evals/eval_rag.py
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build full-system backend image
+        run: docker build -t borderless-money-backend -f backend/Dockerfile backend
+
+      - name: Run image smoke test
+        run: |
+          docker run -d --name bm -p 8000:8000 borderless-money-backend
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8000/api/health > /dev/null; then break; fi
+            sleep 2
+          done
+          curl -sf http://localhost:8000/api/health
+          curl -sf "http://localhost:8000/api/routes/compare?amount=1000" | grep -o "Stellar Hybrid Anchor"

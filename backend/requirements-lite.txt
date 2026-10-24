@@ -1,0 +1,5 @@
+# Borderless Money backend — lite install (fast, stdlib-plus-API)
+# `make smoke` uses this: the full pipeline runs with graceful fallbacks.
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.6

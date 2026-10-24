@@ -242,7 +242,20 @@ Definitions & honesty notes: [docs/kpis.md](docs/kpis.md)
 | Stellar execution | ✅ testnet code path via `stellar-sdk` | falls back to simulated hash when SDK/keys absent |
 | bKash/Nagad payout | — | mock payout registry (`data/recipients.json`) |
 
-Every simulated surface is labeled **“Simulated Quote” / “Testnet Transaction”** in the UI.
+Every simulated surface is labeled **"Simulated Quote" / "Testnet Transaction"** in the UI.
+The full claim-by-claim contract — including what a real Stellar testnet demo
+would require — lives in [REAL_VS_SIMULATED.md](REAL_VS_SIMULATED.md).
+
+## 🧪 One-command verification (judges)
+
+```bash
+make smoke           # fresh venv: imports + end-to-end pipeline gate (<60s)
+make test            # stdlib unit suite
+make eval-sanctions  # sanctions benchmark: true hits BLOCK, near-misses REVIEW, 0% FPR
+make eval-rag        # regulatory retrieval hit@2 + citation-domain check
+make ablation        # risk-model ablation: rule vs logistic vs boosted vs GCN
+make ci-local        # all of the above, CI-equivalent
+```
 
 ---
 
