@@ -67,20 +67,27 @@ def _p95_quote_latency_ms() -> float:
 
 
 def _compliance_scores() -> tuple[float, float, dict]:
-    ev = _load_eval("compliance_eval.json")
-    tp, tp_caught, clear, clear_flagged = 0, 0, 0, 0
+    """Recall/FPR on the realistic sanctions benchmark (data/sanctions_eval.json):
+    exact_normalized = list hits after normalization (must BLOCK), near_variant =
+    added/variant tokens (must REVIEW), clear = unrelated names (no flag)."""
+    ev = _load_eval("sanctions_eval.json")
+    counts = {"exact": {"n": 0, "flagged": 0}, "near": {"n": 0, "flagged": 0},
+              "clear": {"n": 0, "flagged": 0}}
     for case in ev["cases"]:
         status = compliance.screen_party(case["name"], "eval")["status"]
-        if case["label"] in ("exact", "fuzzy"):
-            tp += 1
-            tp_caught += status in ("BLOCKED", "FUZZY_MATCH_REVIEW")
-        else:
-            clear += 1
-            clear_flagged += status in ("BLOCKED", "FUZZY_MATCH_REVIEW")
-    recall = round(tp_caught / tp * 100.0, 1) if tp else 100.0
-    fp_rate = round(clear_flagged / clear * 100.0, 1) if clear else 0.0
-    return recall, fp_rate, {"true_positives": tp, "caught": tp_caught,
-                             "clear_names": clear, "wrongly_flagged": clear_flagged}
+        bucket = {"exact_normalized": "exact", "near_variant": "near"}.get(case["category"], "clear")
+        counts[bucket]["n"] += 1
+        counts[bucket]["flagged"] += status in ("BLOCKED", "FUZZY_MATCH_REVIEW")
+    exact, near, clear = counts["exact"], counts["near"], counts["clear"]
+    recall = round(exact["flagged"] / exact["n"] * 100.0, 1) if exact["n"] else 100.0
+    fpr = round(clear["flagged"] / clear["n"] * 100.0, 1) if clear["n"] else 0.0
+    detail = {
+        "true_hits_blocked": f"{exact['flagged']}/{exact['n']}",
+        "near_variants_reviewed": f"{near['flagged']}/{near['n']}",
+        "clear_flagged": f"{clear['flagged']}/{clear['n']}",
+        "benchmark": "backend/data/sanctions_eval.json (realistic variants; see make eval-sanctions)",
+    }
+    return recall, fpr, detail
 
 
 @lru_cache(maxsize=1)
@@ -97,7 +104,9 @@ def compute_metrics() -> dict:
             "net_receive_uplift_pct": "AED 1,000 -> BKASH: best-route True Net Receive vs Traditional SWIFT, from corridor config",
             "intent_accuracy_pct": f"full-field match on {intent_counts['n']} curated en/bn/ar utterances (backend/data/intent_eval.json); {intent_counts['passed']} passed",
             "p95_quote_latency_ms": "p95 of 20 in-process end-to-end quote runs (parse -> score -> screen)",
-            "compliance": f"{compliance_counts['true_positives']} labeled true positives, {compliance_counts['clear_names']} clear names (backend/data/compliance_eval.json)",
+            "compliance": f"realistic sanctions benchmark: {compliance_counts['true_hits_blocked']} true hits blocked, "
+                          f"{compliance_counts['near_variants_reviewed']} near-variants reviewed, "
+                          f"{compliance_counts['clear_flagged']} clear names flagged",
         },
         "targets": {
             "net_receive_uplift_pct": ">= 3.0",
