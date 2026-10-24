@@ -1,6 +1,6 @@
 # Bangladesh Bank — Remittance Flow and Exchange Rate Application (excerpt)
 
-Source: Bangladesh Bank, Foreign Exchange Policy Department (guidelines excerpts)
+Source: Bangladesh Bank — Foreign Exchange Policy Department (www.bb.org.bd) — demo excerpt
 Status: DEMO RETRIEVAL CORPUS — verify against the original circular PDFs before submission.
 
 Inbound remittances are converted to Bangladeshi Taka at the exchange rate

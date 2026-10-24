@@ -1,6 +1,6 @@
 # Bangladesh Bank — MFS Payout of Foreign Remittance (excerpt)
 
-Source: Bangladesh Bank, Payment Systems Department guidance on mobile financial services
+Source: Bangladesh Bank — Payment Systems Department (www.bb.org.bd), MFS guidance — demo excerpt
 Status: DEMO RETRIEVAL CORPUS — verify against the original circular PDFs before submission.
 
 Mobile Financial Services providers (bKash, Nagad, Rocket) may disburse inbound

@@ -1,6 +1,7 @@
 # Bangladesh Bank — Remittance Incentive Guideline (excerpt)
 
-Source: Bangladesh Bank, SME & Special Programmes Department (remittance incentive circulars)
+Source: Bangladesh Bank — SME & Special Programmes Department (www.bb.org.bd), remittance incentive circulars — demo excerpt
+
 Status: DEMO RETRIEVAL CORPUS — verify against the original circular PDFs before submission.
 
 The Government of Bangladesh pays a cash incentive on remittances received through

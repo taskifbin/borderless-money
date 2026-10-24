@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 
 from app import config
 from app.agent import orchestrator
-from app.services import compliance, gnn_risk, intent_parser, metrics, routing_scorer, store
+from app.services import compliance, gnn_risk, intent_parser, llm, metrics, routing_scorer, store
 from app.services import corridor as corridor_cfg
 
 app = FastAPI(
@@ -67,7 +67,7 @@ def health():
         "status": "ok",
         "corridor": config.CORRIDOR,
         "corridors_available": corridor_cfg.available_corridors(),
-        "engines": _engine_flags(),
+        "engines": {**_engine_flags(), "llm_fallback": llm.is_enabled()},
     }
 
 

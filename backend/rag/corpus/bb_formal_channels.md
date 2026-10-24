@@ -1,6 +1,6 @@
 # Bangladesh Bank — Anti-Hundi and Formal Channel Policy (excerpt)
 
-Source: Bangladesh Bank remittance promotion policy (excerpts)
+Source: Bangladesh Bank — remittance promotion policy (www.bb.org.bd) — demo excerpt
 Status: DEMO RETRIEVAL CORPUS — verify against the original circular PDFs before submission.
 
 Remittances sent through informal channels ("hundi") do not qualify for the

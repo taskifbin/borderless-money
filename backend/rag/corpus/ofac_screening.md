@@ -1,6 +1,6 @@
 # OFAC — Sanctions Screening and Name Matching (excerpt)
 
-Source: U.S. Department of the Treasury, Office of Foreign Assets Control — FAQs (excerpts)
+Source: U.S. Department of the Treasury — OFAC FAQs (ofac.treasury.gov) — demo excerpt
 Status: DEMO RETRIEVAL CORPUS — verify against ofac.treasury.gov before submission.
 
 Sanctions compliance programs are expected to use a risk-based approach to screen

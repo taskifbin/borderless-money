@@ -1,0 +1,13 @@
+{
+  "description": "Retrieval benchmark (Step 3): each query must surface its labeled corpus chunk in the top-2. Run via `make eval-rag`.",
+  "queries": [
+    {"query": "2.5 percent government cash incentive formal remittance", "expect_chunk": "bb_remittance_incentive"},
+    {"query": "bKash Nagad mobile wallet payout taka disbursement", "expect_chunk": "bb_mfs_payout"},
+    {"query": "hundi informal channel does not qualify", "expect_chunk": "bb_formal_channels"},
+    {"query": "exchange rate application fees net amount received", "expect_chunk": "bb_fx_application"},
+    {"query": "50 percent rule owned blocked entity", "expect_chunk": "ofac_screening"},
+    {"query": "fuzzy name matching over-blocking human review", "expect_chunk": "ofac_screening"},
+    {"query": "pacs.008 interbank settlement amount message fields", "expect_chunk": "iso20022_pacs008"},
+    {"query": "debtor creditor structured audit trail travel rule", "expect_chunk": "iso20022_pacs008"}
+  ]
+}

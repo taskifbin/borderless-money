@@ -13,9 +13,9 @@ same node functions — identical behavior, no dependency required.
 from typing import TypedDict
 
 from app import config
-from app.services import compliance, gnn_risk, intent_parser, routing_scorer, stellar, store
+from app.services import compliance, gnn_risk, intent_parser, regulatory_rag, routing_scorer, stellar, store
 from app.services import corridor as corridor_cfg
-from app.services import regulatory_rag
+from app.services import explainer, llm
 
 try:
     from langgraph.graph import END, StateGraph
@@ -29,6 +29,10 @@ class AgentState(TypedDict, total=False):
     mode: str                  # "quote" | "execute"
     corridor: str              # corridor config code, e.g. "uae_bd"
     text: str | None
+    llm_used: bool             # LLM fallback contributed to intent parsing
+    explanation_en: str        # grounded explanation (number-guarded)
+    explanation_bn: str
+    explanation_meta: dict
     parsed_intent: dict | None
     amount: float | None
     payout_method: str
@@ -66,11 +70,37 @@ def _resolve_recipient(recipient: str | None, corr: dict | None = None) -> str:
 def parse_intent_node(state: AgentState) -> dict:
     log = list(state.get("explanation_log", []))
     parsed = None
+    llm_used = False
     if state.get("text"):
         parsed = intent_parser.parse_intent(state["text"])
         amount = state.get("amount") or parsed["amount"]
         payout = state.get("payout_method") or parsed["payout_method"]
         recipient = state.get("recipient_name") or parsed["recipient"]
+
+        # Bounded LLM fallback: only when the rule parser found no amount at all,
+        # only when an API key is configured, schema-validated, never trusted.
+        if parsed["amount"] is None and parsed["payout_method"] is None and llm.is_enabled():
+            response, error = llm.complete_json(
+                "Extract a remittance intent as strict JSON with keys corridor "
+                "(string), amount (number > 0), currency (string, e.g. AED), "
+                "recipient (string or null), urgency (\"normal\" or \"urgent\"). "
+                f"Transcript: {state['text']}",
+                llm.INTENT_SCHEMA,
+            )
+            if response is not None:
+                amount = float(response["amount"])
+                if response.get("currency"):
+                    parsed["source_currency"] = str(response["currency"]).upper()
+                if response.get("recipient") and not recipient:
+                    recipient = response["recipient"]
+                parsed["llm_fallback"] = True
+                llm_used = True
+                log.append("Intent parsed by schema-validated LLM fallback "
+                           "(deterministic parser found no amount).")
+            else:
+                log.append("Could not understand the request deterministically and the "
+                           "LLM fallback failed — please rephrase.")
+
         log.append(
             f"Intent parsed: send {amount if amount is not None else '?'} "
             f"{parsed['source_currency']} → {parsed['dest_currency']} via "
@@ -79,8 +109,8 @@ def parse_intent_node(state: AgentState) -> dict:
         )
         return {"parsed_intent": parsed, "amount": amount,
                 "payout_method": payout, "recipient_name": recipient,
-                "explanation_log": log}
-    return {"parsed_intent": None, "explanation_log": log}
+                "llm_used": llm_used, "explanation_log": log}
+    return {"parsed_intent": None, "llm_used": False, "explanation_log": log}
 
 
 def score_routes_node(state: AgentState) -> dict:
@@ -172,7 +202,7 @@ def check_compliance_node(state: AgentState) -> dict:
     else:
         rag_query = ("remittance cash incentive 2.5% formal channel government payout "
                      "exchange rate application taka")
-    risk["regulatory_basis"] = regulatory_rag.retrieve(rag_query)
+    risk["regulatory_basis"] = regulatory_rag.retrieve(rag_query)["passages"]
 
     return {"risk": risk, "compliance": screening, "recipient_name": recipient,
             "decision": decision, "explanation_log": log}
@@ -268,7 +298,17 @@ def explain_decision_node(state: AgentState) -> dict:
         log.append("Decision: payment HELD — near-match to a sanctions entry needs human sign-off.")
     elif decision == "HIGH_RISK_REVIEW":
         log.append("Decision: payment HELD — GNN risk above threshold needs human sign-off.")
-    return {"explanation_log": log}
+
+    explanations = explainer.build_explanations(
+        state, llm_fn=(lambda p: llm.complete_text(p)[0]) if llm.is_enabled() else None
+    )
+    log.append("Explanation generated from the decision log; every number is "
+               "ground-checked against the quote.")
+    return {"explanation_log": log, "explanation_en": explanations["en"],
+            "explanation_bn": explanations["bn"], "explanation_meta": {
+                "grounded": explanations["grounded"],
+                "llm_paraphrased": explanations["llm_paraphrased"],
+            }}
 
 
 def uuid4_short() -> str:
