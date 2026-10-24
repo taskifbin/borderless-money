@@ -377,5 +377,11 @@ def run(mode: str, *, text: str | None = None, amount: float | None = None,
         "risk": None, "compliance": None, "execution": None, "transaction": None,
     }
     if _COMPILED is not None:
-        return _COMPILED.invoke(state)
-    return _run_sequential(state)
+        try:
+            return _COMPILED.invoke(state)
+        except ValueError as exc:  # corridor/config errors → surfaced, not raised
+            return {**state, "error": str(exc), "decision": "ERROR"}
+    try:
+        return _run_sequential(state)
+    except ValueError as exc:
+        return {**state, "error": str(exc), "decision": "ERROR"}

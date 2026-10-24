@@ -45,9 +45,9 @@ class TestIncentiveMath(unittest.TestCase):
 class TestRoutingScorer(unittest.TestCase):
     def test_ranking_and_flags(self):
         routes = routing_scorer.score_routes(1000, "BKASH")
-        self.assertEqual(len(routes), 3)
-        nets = [r["breakdown"]["true_net_receive_bdt"] for r in routes]
-        self.assertEqual(nets, sorted(nets, reverse=True))
+        self.assertEqual(len(routes), 5)
+        evs = [r["expected_value_bdt"] for r in routes]
+        self.assertEqual(evs, sorted(evs, reverse=True))
         self.assertTrue(routes[0]["is_best"])
         self.assertEqual(routes[0]["name"], "Stellar Hybrid Anchor → BKASH")
         self.assertEqual(routes[0]["advantage_bdt_vs_best"], 0.0)
@@ -56,7 +56,7 @@ class TestRoutingScorer(unittest.TestCase):
     def test_all_payouts_have_paths(self):
         for payout in ("BKASH", "NAGAD", "BANK"):
             routes = routing_scorer.score_routes(500, payout)
-            self.assertEqual(len(routes), 3, payout)
+            self.assertEqual(len(routes), 5, payout)
 
 
 class TestIntentParser(unittest.TestCase):
@@ -145,7 +145,7 @@ class TestOrchestratorEndToEnd(unittest.TestCase):
     def test_quote_full_state(self):
         state = orchestrator.run("quote", text=self.TEXT)
         self.assertIsNone(state["error"])
-        self.assertEqual(len(state["routes"]), 3)
+        self.assertEqual(len(state["routes"]), 5)
         self.assertEqual(state["decision"], "CLEAR")
         self.assertIsNone(state["execution"])
         self.assertIn("govt_incentive_added_bdt", state["routes"][0]["breakdown"])

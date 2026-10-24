@@ -8,12 +8,13 @@
   "geo_code": "SA->BD",
   "mid_market_rate": 8.83,
   "fx_source": "Stub — replace with live FX feed before use",
+  "sourced_at": "2026-10-24T00:00:00Z",
   "govt_incentive_rate": 0.025,
   "govt_incentive_note": "Same Bangladesh Bank incentive applies to formal remittance from any corridor",
   "rails": [
-    { "name": "Traditional SWIFT", "fx": 8.65, "fee_source": 15.00, "hours": 24.0, "success_rate": 0.97 },
-    { "name": "Stellar Hybrid Anchor", "fx": 8.74, "fee_source": 3.00, "hours": 2.0, "success_rate": 0.98 },
-    { "name": "Exchange House MTO", "fx": 8.60, "fee_source": 10.50, "hours": 6.0, "success_rate": 0.95 }
+    { "name": "Traditional SWIFT", "fx": 8.65, "fee_source": 15.00, "hours": 24.0, "success_rate": 0.97, "incentive_eligible": true },
+    { "name": "Stellar Hybrid Anchor", "fx": 8.74, "fee_source": 3.00, "hours": 2.0, "success_rate": 0.98, "incentive_eligible": true },
+    { "name": "Exchange House MTO", "fx": 8.60, "fee_source": 10.50, "hours": 6.0, "success_rate": 0.95, "incentive_eligible": true }
   ],
   "payout_methods": ["BKASH", "NAGAD", "BANK"],
   "default_payout": "BKASH",

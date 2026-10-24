@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 
 from app import config
 from app.agent import orchestrator
-from app.services import compliance, gnn_risk, intent_parser, llm, metrics, routing_scorer, store
+from app.services import compliance, gnn_risk, horizon, intent_parser, llm, metrics, routing_scorer, store
 from app.services import corridor as corridor_cfg
 
 app = FastAPI(
@@ -112,11 +112,32 @@ def get_transaction(transaction_id: str):
 
 @app.get("/api/routes/compare")
 def compare_routes(amount: float = 1000.0, payout_method: str = "BKASH",
-                   corridor: str = corridor_cfg.DEFAULT_CORRIDOR):
+                   corridor: str = corridor_cfg.DEFAULT_CORRIDOR,
+                   deadline_hours: float | None = None):
+    """Direct Layer A access: incentive-aware expected-value ranking plus the
+    naive cheapest-fee baseline, with every data source and its timestamp."""
     try:
-        return {"routes": routing_scorer.score_routes(amount, payout_method, corridor_code=corridor)}
+        routes = routing_scorer.score_routes(amount, payout_method,
+                                             corridor_code=corridor,
+                                             deadline_hours=deadline_hours)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+    cfg = corridor_cfg.load_corridor(corridor)
+    baseline = routing_scorer.naive_baseline(routes)
+    return {
+        "routes": routes,
+        "baseline": {
+            "strategy": "naive cheapest-fee",
+            "name": baseline["name"] if baseline else None,
+            "fee_aed": baseline["fee_aed"] if baseline else None,
+            "expected_value_bdt": baseline["expected_value_bdt"] if baseline else None,
+            "incentive_eligible": baseline["incentive_eligible"] if baseline else None,
+        },
+        "data_sources": {
+            "fx": {"source": cfg.get("fx_source"), "as_of": cfg.get("sourced_at")},
+            "stellar_horizon": horizon.probe(),
+        },
+    }
 
 
 @app.get("/metrics")
