@@ -15,10 +15,11 @@ contains only executed commands and their real outputs — no invented numbers.
 | `make scenarios` (`evals/eval_scenarios.py`) | **8/8 scenarios pass** → `docs/evaluation_report.json` |
 | `make eval-sanctions` | recall 14/14 (100%), near-variant recall 14/14 (100%), block precision 100%, single-token hard-blocks 0, policy table satisfied |
 | `make eval-rag` | hit@2 8/8 (100%), all citations resolve to allowed domains |
+| `make ablation` (`ml/ablation.py`) | re-run 2026-10-25 with class-error columns: rule 0.9185 / logistic 0.9217 / boosted stumps 0.9068 / GCN 0.9130 AUC on the same synthetic split — a simple linear rule matches the GCN |
+| `make train-gnn` (`ml/train_gnn.py`) | re-run 2026-10-25 with class-specific error analysis: held-out AUC 0.9038 (reproduced deterministically); at the train-tuned 0.51 threshold TP 52 / FP 3 / FN 8 / TN 417 (FPR 0.7%, FNR 13.3%); **at the 0.8 production review gate recall is 0.0** — the trained model never reaches the policy threshold |
 | `npx tsc --noEmit` (frontend) | clean |
 | `npm run build` (frontend) | success — routes `/` (94.8 kB) and `/roi` (90.1 kB first-load) |
 | Live API verification (uvicorn + curl) | `/api/ready` ok · `X-Request-ID` present · quote→bound execute uses quoted numbers · idempotent replay returns original receipt · consumed quote → `quote_already_used` · unconfirmed → `confirmation_required` · missing API key → 401 · burst over limit → 429 · health/ready stay 200 under throttle |
-| `make ablation` / `make train-gnn` | **not re-run this session** (requires full PyG stack hours; prior artifacts `ml/eval.json` AUC 0.9038 + `ml/ablation.md` stand as the recorded results, honestly caveated as synthetic-benchmark) |
 
 Total test count: **111 tests across 6 suites, all passing.**
 
@@ -69,7 +70,7 @@ Everything below **failed at least once while building** and now passes:
 - **bKash/Nagad payout is a mock registry**; no real payout integration exists.
 - **FX/fee data are fixture snapshots** with `sourced_at` labels; no live feed.
 - **Sanctions list is a 10-entry local sample** — not an official SDN export; the matcher is not a legal screening system.
-- **Risk model** trained on synthetic data (AUC 0.9038, documented ceiling ≈0.94); stand-in inference is default; not calibrated; not integrated as a legal determination.
+- **Risk model** trained on synthetic data whose fraud patterns mirror the stand-in rule's signals — the benchmark measures the generator's separability, not real-world detection (AUC 0.9038, ceiling ≈0.94; a linear rule matches it). Headline precision/recall hold only at the train-tuned 0.51 threshold; at the 0.8 production review gate the trained model has **recall 0.0**. Stand-in inference is default; nothing about it is calibrated or a legal determination.
 - **RAG corpus** contains demo excerpts referencing real organizations — verify against original documents before production.
 - **Rate limiting, idempotency store, quote store** are in-memory/SQLite per process — a multi-node deployment needs shared state.
 - **LLM fallback untested against a real LLM** (no API key configured; stub-tested).

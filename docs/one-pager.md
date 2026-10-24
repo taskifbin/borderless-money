@@ -22,7 +22,7 @@ Voice/text → multilingual intent parser → corridor graph scorer (NetworkX: r
 - **Intent parsing:** rule-based multilingual parser (Bengali/Arabic numerals, code-switching, transliterations) — deterministic where money is involved. **Measured: 100% on a 49-utterance curated en/bn/ar benchmark.**
 - **Orchestration:** LangGraph state machine over **deterministic Python tools — the LLM never does arithmetic**, which is how we prevent hallucinated money. (Runs with an identical sequential fallback.)
 - **Routing:** corridor graph priced by the True Net Receive engine; corridors are config files (`uae_bd.json`, `ksa_bd.json`) — a new corridor is a new file, not code.
-- **Risk:** trained 2-layer GCN over transaction subgraphs (**test AUC 0.9038** on a labeled synthetic benchmark, honest eval in `ml/eval.json`) + OFAC fuzzy matching (recall 100%, false-hold 0% on our labeled set) with holds-not-blocks human review.
+- **Risk:** trained 2-layer GCN over transaction subgraphs (held-out **AUC 0.9038 on a labeled synthetic benchmark** — prototype evidence, not production effectiveness; `ml/eval.json` publishes the class-error analysis, and `ml/ablation.md` shows a simple linear rule matches it) + OFAC fuzzy matching (recall 100%, false-hold 0% on our labeled set) with holds-not-blocks human review.
 - **RAG:** regulatory corpus (Bangladesh Bank circular excerpts, OFAC FAQ, ISO 20022) grounds every decision with **cited passages** (`regulatory_basis` in the API response).
 - **Personalisation:** corridor defaults, recipient registry, language preference (persisted).
 
@@ -39,7 +39,7 @@ Full **bn UI toggle on all four screens** (persisted), Bangla voice input, and t
 | p95 quote latency (engine) | **~1.3 ms** | ≤ 3 s |
 | Compliance false-positive hold rate | **0.0%** | ≤ 2.0% |
 | OFAC screening recall | **100%** | 100% |
-| GNN test AUC (synthetic benchmark) | **0.9038** | ceiling ≈0.94 |
+| GNN test AUC (synthetic benchmark — prototype evidence, not production effectiveness) | **0.9038** | ceiling ≈0.94; linear-rule baseline matches (0.9185) |
 
 ## 7. Team, NRB, business model & roadmap
 

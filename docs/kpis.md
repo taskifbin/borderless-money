@@ -23,12 +23,18 @@ problem's economics, not about our production pricing.
 
 ## Risk-model ablation (honest positioning — `make ablation`, full table in `ml/ablation.md`)
 
-| model | AUC | precision | recall | FPR |
-| :--- | ---: | ---: | ---: | ---: |
-| rule-stand-in (shipped default) | 0.9185 | 0.9811 | 0.8254 | 0.0024 |
-| logistic-regression | 0.9217 | 0.9630 | 0.8254 | 0.0048 |
-| boosted-stumps | 0.9068 | 0.9811 | 0.8254 | 0.0024 |
-| gcn-shipped (USE_TRAINED_GNN=true) | 0.9130 | 0.9811 | 0.8254 | 0.0024 |
+**Synthetic-benchmark prototype evidence — not evidence of production fraud
+detection.** The generator's fraud/normal ranges mirror the stand-in rule's
+signals, so these numbers measure the benchmark's separability, not real-world
+performance. Metrics on the held-out split, thresholds tuned on train only
+(max-F1); confusion cells are tp/fp/fn/tn.
+
+| model | AUC | precision | recall | FPR | FNR | confusion |
+| :--- | ---: | ---: | ---: | ---: | ---: | :--- |
+| rule-stand-in (shipped default) | 0.9185 | 0.9811 | 0.8254 | 0.0024 | 0.1746 | 52/1/11/416 |
+| logistic-regression | 0.9217 | 0.9630 | 0.8254 | 0.0048 | 0.1746 | 52/2/11/415 |
+| boosted-stumps | 0.9068 | 0.9811 | 0.8254 | 0.0024 | 0.1746 | 52/1/11/416 |
+| gcn-shipped (USE_TRAINED_GNN=true) | 0.9130 | 0.9811 | 0.8254 | 0.0024 | 0.1746 | 52/1/11/416 |
 
 **Plain statement:** the shipped GCN consumes identical feature vectors on all
 nodes, so it reduces to an MLP on tabular features — graph structure adds
@@ -58,9 +64,12 @@ sensible decisions.
 | Metric | Value |
 | :--- | ---: |
 | Architecture | RemittanceGNN — 2-layer GCN, 16 → 32 → 1, sigmoid (PyTorch Geometric) |
-| Training data | 2,400 synthetic transactions (12% fraud patterns; 2% symmetric label noise) |
-| **Test AUC** | **0.9038** (ceiling ≈0.94 at this noise/imbalance) |
+| Training data | 2,400 **synthetic** transactions (12% fraud patterns; 2% symmetric label noise) |
+| **Test AUC** | **0.9038** (ceiling ≈0.94 at this noise/imbalance) — prototype evidence, not production effectiveness |
 | Precision / recall @ operating threshold 0.51 | 0.9455 / 0.8667 (threshold tuned on train only — no leakage) |
+| Class errors @ 0.51 | TP 52 · FP 3 · FN 8 · TN 417 → FPR 0.7%, FNR 13.3% |
+| Class errors @ production gate 0.8 | **TP 0 · FN 60 — recall 0.0**: raw sigmoids never reach the policy threshold; enabling the trained model for review-triggering requires recalibration first |
+| Split | single RNG stream (seed 42): first 1,920 draws train, next 480 test; each transaction an independent 4-node subgraph (no graph leakage possible); per-transaction i.i.d. — NOT per-sender/temporal, which production evaluation must fix |
 | Production review gate | 0.8 (policy threshold, unchanged from the stand-in) |
 | Enable | `USE_TRAINED_GNN=true`; otherwise the deterministic stand-in serves — identical API shape |
 

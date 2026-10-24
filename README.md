@@ -39,12 +39,24 @@ pricing are flagged and can never win or settle.
 
 Most apps hide fees and spreads. Borderless Money calculates the **exact amount the recipient
 gets** — including the **Bangladesh Bank’s official 2.5% cash incentive** for formal
-remittance (Bangladesh Bank, SME & Remittance Department circulars).
+remittance (Bangladesh Bank, SME & Remittance Department circulars). Every term below is
+in BDT: fees quoted in AED are converted at the same rate before they are subtracted —
+that is how the engine computes it (`app/services/incentive.py`, contract in
+[docs/FINANCIAL_MODEL.md](docs/FINANCIAL_MODEL.md)).
 
-```
-True Net Receive = (Amount × FX Rate) − (Transfer Fees + Payout Fees)
-                 + (Amount × FX Rate × 0.025 Govt Incentive)
-```
+$$
+\begin{aligned}
+\text{Gross}_{BDT}&=\text{Principal}_{AED}\times\text{FX}\\
+\text{Fees}_{BDT}&=\text{Fees}_{AED}\times\text{FX}\\
+\text{Net}_{BDT}&=\text{Gross}_{BDT}-\text{Fees}_{BDT}\\
+&\quad+\text{Eligible incentive}_{BDT}
+\end{aligned}
+$$
+
+The incentive is **not assumed for every transfer**: it is computed per route under the
+applicable policy — the Bangladesh Bank cash incentive applies to qualifying
+formal-channel remittance, so it is added only on rails flagged `incentive_eligible`
+(see the Cash Pickup row in the table below, which earns 0).
 
 **Worked example — sending AED 1,000 to bKash (simulated quotes):**
 
@@ -294,7 +306,7 @@ Definitions & honesty notes: [docs/kpis.md](docs/kpis.md)
 
 - **Bangla UI** — `EN | বাংলা` toggle on all four screens, persisted; parser handles Bengali numerals, inflections and Banglish.
 - **Config-driven corridors** — `backend/config/corridors/{uae_bd,ksa_bd}.json` hold FX, incentive rate, rails and last-mile fees; a new corridor is a new file, no code changes.
-- **Trained GNN behind a flag** — `backend/ml/train_gnn.py` trains the PyG GCN on a labeled synthetic transaction graph (**test AUC 0.9038**, honest eval in `ml/eval.json`); enable with `USE_TRAINED_GNN=true`, else the deterministic stand-in serves. API shape identical.
+- **Trained GNN behind a flag** — `backend/ml/train_gnn.py` trains the PyG GCN on a labeled **synthetic** transaction graph (held-out AUC 0.9038 — *prototype evidence of the training pipeline, not evidence of production fraud detection*). Class-specific error analysis in `ml/eval.json` shows the trained model's raw scores never reach the 0.8 production review gate (recall 0.0 at that threshold), and `ml/ablation.md` shows a simple linear rule matches the GCN on the same split — so the deterministic stand-in stays the default; `USE_TRAINED_GNN=true` is opt-in and needs recalibration before any review-triggering use. API shape identical.
 - **Regulatory RAG** — `backend/rag/` grounds decisions with cited passages from Bangladesh Bank/OFAC/ISO 20022 excerpts; exposed as `regulatory_basis` in every quote/execute response.
 
 ---
@@ -306,7 +318,7 @@ Definitions & honesty notes: [docs/kpis.md](docs/kpis.md)
 | 2.5% BD Govt incentive math | ✅ real policy, real math | — |
 | Routing & fee/FX comparison | ✅ real engine | corridor rates are demo snapshots |
 | OFAC screening | ✅ fuzzy-matching engine | sample sanctions list (local JSON) |
-| GNN RegTech | ✅ trained PyG GCN shipped (`ml/model.pt`, AUC 0.90 on synthetic benchmark) | stand-in inference is the default; trained model opt-in via `USE_TRAINED_GNN=true` |
+| GNN RegTech | ✅ trained PyG GCN shipped (`ml/model.pt`); held-out **synthetic** benchmark AUC 0.9038 with class-error analysis + baseline ablation published — labeled prototype evidence, not production effectiveness (at the 0.8 policy gate the trained model flags nothing: recall 0.0; a linear rule matches its AUC) | stand-in inference is the default; trained model opt-in via `USE_TRAINED_GNN=true` |
 | Stellar execution | ✅ testnet code path via `stellar-sdk` | falls back to simulated hash when SDK/keys absent |
 | bKash/Nagad payout | — | mock payout registry (`data/recipients.json`) |
 

@@ -20,7 +20,7 @@ Delivery notes: open to the panel, not the screen. Numbers are spoken slowly. If
 
 **[2:00–2:30 · AI approach]**
 
-> Under the hood, the LLM never does arithmetic — an orchestrator calls deterministic tools; that is how we prevent hallucinated money. Corridors are configuration files: UAE today, KSA already stubbed — a new corridor is a new file, not a codebase. And the GNN is real: trained on a labeled transaction graph, AUC 0.90 on a held-out benchmark, with the full evaluation published in our repo.
+> Under the hood, the LLM never does arithmetic — an orchestrator calls deterministic tools; that is how we prevent hallucinated money. Corridors are configuration files: UAE today, KSA already stubbed — a new corridor is a new file, not a codebase. And the risk model is honest: a trained GCN ships in-repo, evaluated on a held-out **synthetic** benchmark (AUC 0.90) — published as prototype evidence with class-error analysis and simple-baseline ablation, not pitched as production fraud detection; the explainable deterministic rule stays the default scorer.
 
 **[2:30–3:00 · Business & close]**
 

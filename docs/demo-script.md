@@ -44,7 +44,7 @@ At **1:45**: click **বাংলা** — the quote screen flips to Bangla for 
 
 Four layers, thirty seconds:
 
-> "A multilingual intent parser handles Bangla numerals and code-switching — **100% on our 49-utterance en/bn/ar benchmark**. A LangGraph orchestrator calls **deterministic tools — the LLM never does arithmetic**; that's how we prevent hallucinated money. A corridor graph scores every rail from config — UAE today, KSA already stubbed, a new corridor is a new file. And a **trained graph neural network plus OFAC fuzzy matching** runs pre-settlement risk — test AUC 0.90, with human review, never silent rejection. Regulatory grounding comes from a **retrieval layer over Bangladesh Bank circulars and OFAC guidance** — every decision ships with citations."
+> "A multilingual intent parser handles Bangla numerals and code-switching — **100% on our 49-utterance en/bn/ar benchmark**. A LangGraph orchestrator calls **deterministic tools — the LLM never does arithmetic**; that's how we prevent hallucinated money. A corridor graph scores every rail from config — UAE today, KSA already stubbed, a new corridor is a new file. And **pre-settlement risk screening plus OFAC fuzzy matching** runs before any money moves — an explainable deterministic rule serves by default; the trained GCN ships opt-in with its synthetic-benchmark evaluation published in full (AUC 0.90 held-out, labeled prototype evidence), with human review, never silent rejection. Regulatory grounding comes from a **retrieval layer over Bangladesh Bank circulars and OFAC guidance** — every decision ships with citations."
 
 *(Screen: `/docs` endpoint list → `/metrics` → the corridor config file, 3 seconds each.)*
 
@@ -65,5 +65,5 @@ Four layers, thirty seconds:
 - [ ] "Simulated quotes / testnet" honesty labels visible in every money screen
 - [ ] Review scenario pre-loaded via `/?scenario=fuzzy_review`
 - [ ] Bangla toggle moment at 1:45 actually recorded (persisted toggle — switch back after)
-- [ ] Burn in captions on: ৳33,488.80, +3.26%, AUC 0.90, 100% recall
+- [ ] Burn in captions on: ৳33,488.80, +3.26%, AUC 0.90 (synthetic benchmark), 100% recall (curated set)
 - [ ] 3:00 hard cap; fresh-eyes viewer test passed before final cut
