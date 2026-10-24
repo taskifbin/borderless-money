@@ -32,7 +32,8 @@ except ImportError:  # pragma: no cover - demo fallback
     RemittanceGNN = None
     PYG_AVAILABLE = False
 
-ENGINE = "pyg-gcn" if PYG_AVAILABLE else "heuristic-stand-in"
+ENGINE = "heuristic-stand-in"  # truthful: the default scorer is the tabular stand-in,
+                               # regardless of whether PyG happens to be installed
 REVIEW_THRESHOLD = 0.8
 MODEL_PATH = Path(__file__).resolve().parents[2] / "ml" / "model.pt"
 
@@ -146,7 +147,11 @@ def _trained_model():
 
 
 def demo_features(scenario: str, amount: float, sender: dict, recipient_name: str) -> dict:
-    """Build the stand-in feature vector for a demo scenario."""
+    """Scripted DEMO INPUT, not a model artifact: maps a demo scenario name onto
+    feature values so the walkthrough is reproducible. The model itself is
+    trained only on the synthetic generator in ml/train_gnn.py — no scenario
+    label ever reaches training. Scenario inputs are labeled as scripted in the
+    API response and the demo."""
     scenario = (scenario or "default").lower()
     avg = float(sender.get("avg_send_aed", 850.0)) or 1.0
     amount_ratio = amount / avg
@@ -194,28 +199,49 @@ def _risk_band(score: float) -> str:
     return "LOW"
 
 
-def _explanation(f: dict, score: float, n_nodes: int, n_edges: int) -> str:
-    device = "trusted device fingerprint" if f["device_trust"] >= 0.9 else "unrecognized/new device"
-    age = f"{f['account_age_days']}-day account history"
-    ratio = f"amount within {f['amount_ratio']}× historical mean"
-    if f["amount_ratio"] >= 3:
-        ratio = f"amount is {f['amount_ratio']}× the historical mean — abnormal"
-    rel = ("long-standing recipient relationship" if f["relationship_score"] >= 0.9
-           else "no established relationship with this recipient")
-    hour = "" if not f["unusual_hour"] else ", initiated at an unusual hour"
+def _decision_log(f: dict) -> list[dict]:
+    """The actual signals the scorer saw, with values — the explanation is
+    generated from this log, never hardcoded."""
+    age_score = min(f["account_age_days"] / 365.0, 1.0)
+    return [
+        {"feature": "device_trust", "value": f["device_trust"],
+         "signal": "trusted device" if f["device_trust"] >= 0.9 else "unrecognized/new device"},
+        {"feature": "account_age", "value": f["account_age_days"],
+         "signal": f"{f['account_age_days']}-day account history"},
+        {"feature": "amount_ratio", "value": f["amount_ratio"],
+         "signal": (f"amount {f['amount_ratio']}× historical mean"
+                    + (" — abnormal" if f["amount_ratio"] >= 3 else ""))},
+        {"feature": "relationship_score", "value": f["relationship_score"],
+         "signal": ("known recipient relationship" if f["relationship_score"] >= 0.9
+                    else "no established recipient relationship")},
+        {"feature": "unusual_hour", "value": f["unusual_hour"],
+         "signal": "initiated at an unusual hour" if f["unusual_hour"] else "normal hour"},
+    ]
+
+
+def _explanation(engine: str, score: float, log: list[dict]) -> str:
+    """Generated from the decision log only. Tabular stand-in and trained
+    checkpoint are named truthfully; 'graph structure' is not claimed unless a
+    model actually consumed graph structure."""
+    signals = "; ".join(entry["signal"] for entry in log)
     verdict = ("Behavior consistent with normal remittance pattern."
                if score < REVIEW_THRESHOLD else
                "Pattern matches elevated-risk indicators; hold for analyst review.")
-    return (f"GNN subgraph analysis ({n_nodes} nodes / {n_edges} edges): {device}, "
-            f"{age}, {ratio}, {rel}{hour}. {verdict}")
+    if engine == "pyg-gcn-trained":
+        return (f"Risk model: trained GCN checkpoint (ml/eval.json). Score {score:.2f} "
+                f"({_risk_band(score)}). Signals: {signals}. {verdict}")
+    return (f"Risk model: deterministic tabular stand-in (graph structure is a "
+            f"future extension — see ml/ablation.md). Score {score:.2f} "
+            f"({_risk_band(score)}). Signals: {signals}. {verdict}")
 
 
 def pre_settlement_check(features: dict, sender_id: str = "usr_uae_001",
                          corridor: str = "AE->BD") -> dict:
-    """Run the GNN (trained checkpoint or stand-in) over the transaction subgraph."""
+    """Score the transaction with the trained checkpoint (USE_TRAINED_GNN=true)
+    or the deterministic tabular stand-in; both explain from the decision log."""
     f = features
     nodes = [f"sender:{sender_id}", f["recipient_node"], f["device_node"], f"geo:{corridor}"]
-    n_nodes, n_edges = len(nodes), len(nodes) - 1
+    log = _decision_log(f)
 
     engine = ENGINE
     score = None
@@ -241,6 +267,7 @@ def pre_settlement_check(features: dict, sender_id: str = "usr_uae_001",
         "graph_nodes_evaluated": nodes,
         "requires_manual_review": score >= REVIEW_THRESHOLD,
         "engine": engine,
-        "ai_explanation": _explanation(f, score, n_nodes, n_edges),
+        "decision_log": log,
+        "ai_explanation": _explanation(engine, score, log),
         "checked_at": _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
