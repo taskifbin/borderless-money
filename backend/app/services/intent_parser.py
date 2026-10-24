@@ -109,6 +109,18 @@ def _extract_recipient(text: str) -> str | None:
                 return relation
         elif token in text:  # Bengali/Arabic: substring (word boundaries don't apply)
             return relation
+    # Bare proper-noun recipient: "… to <Name> via bkash" / "… to <Name>".
+    # A name that lands in free text MUST be screened, not silently replaced
+    # by the demo persona — screening the wrong name is how holds get missed.
+    m = re.search(
+        r"\bto\s+((?:[A-Z][a-z]+)(?:\s+(?:[A-Z][a-z]+|bin|binte|ibn|al)){0,3})\b"
+        r"(?=\s+(?:via|using|through|on|by)\b|\s*$|[,.!?]|$)",
+        text)
+    if m:
+        candidate = m.group(1).strip()
+        # reject corridor/payout words that merely look like names
+        if candidate.lower() not in {"bkash", "nagad", "bank", "wallet", "dhaka", "bangladesh"}:
+            return candidate
     return None
 
 

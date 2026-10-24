@@ -90,13 +90,26 @@ export default function Home() {
     setBusy(true);
     setError(null);
     try {
+      // Choosing a route on the quote screen IS the explicit confirmation:
+      // execution is bound to that exact quote (stale/mismatched → refused).
       const state = await executeTransfer({
         amount: amountValue,
         recipient_name: recipient.trim() || undefined,
         selected_route_name: routeName,
         demo_scenario: scenario,
+        quote_id: quote?.quote_id ?? undefined,
+        confirmed: Boolean(quote?.quote_id),
       });
       setResult(state);
+      if (state.error === "quote_expired" || state.error === "quote_already_used") {
+        setError(
+          lang === "bn"
+            ? "কোটটির মেয়াদ শেষ — অনুগ্রহ করে আবার রেট নিন।"
+            : "That quote expired or was already used — please fetch a fresh rate.",
+        );
+        setScreen("send");
+        return;
+      }
       if (state.decision === "CLEAR") setScreen("receipt");
       else if (state.decision === "BLOCKED") setError(t.blocked);
       else setScreen("review");
@@ -261,12 +274,13 @@ function QuoteScreen({
   const comparison = isBestSelected
     ? t.routedMore(
         best.rail,
-        Math.round(best.breakdown.true_net_receive_bdt - baseline.breakdown.true_net_receive_bdt)
-          .toLocaleString("en-US"),
+        Math.round(
+          (best.breakdown.true_net_receive_bdt ?? 0) - (baseline.breakdown.true_net_receive_bdt ?? 0),
+        ).toLocaleString("en-US"),
       )
     : t.routedLess(
         selected.rail,
-        Math.round(selected.advantage_bdt_vs_best).toLocaleString("en-US"),
+        Math.round(selected.advantage_bdt_vs_best ?? 0).toLocaleString("en-US"),
         best.rail,
       );
 

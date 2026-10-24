@@ -20,6 +20,7 @@
   ],
   "payout_methods": ["BKASH", "NAGAD", "BANK"],
   "default_payout": "BKASH",
+  "quote_ttl_minutes": 60,
   "last_mile": {
     "BKASH": {
       "Traditional SWIFT": [9.00, 4.0, 1.0],

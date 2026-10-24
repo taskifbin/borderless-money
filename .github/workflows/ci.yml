@@ -34,11 +34,24 @@ jobs:
           python backend/tests/test_step3.py
           python backend/tests/test_step4.py
 
+      - name: Financial correctness suite
+        run: python backend/tests/test_financial.py
+        env:
+          USE_TRAINED_GNN: "false"
+
+      - name: ROI model suite
+        run: python backend/tests/test_roi.py
+
       - name: Sanctions benchmark
         run: python backend/evals/eval_sanctions.py
 
       - name: RAG retrieval benchmark
         run: python backend/evals/eval_rag.py
+
+      - name: End-to-end scenario evaluation (A-H)
+        run: python backend/evals/eval_scenarios.py
+        env:
+          USE_TRAINED_GNN: "false"
 
   docker:
     runs-on: ubuntu-latest

@@ -5,21 +5,24 @@ PY      := python3
 VENV    := backend/.venv
 VPY     := $(VENV)/bin/python
 
-.PHONY: help setup smoke test eval-sanctions eval-rag ablation train-gnn run-backend run-frontend docker-build docker-up ci-local
+.PHONY: help setup smoke test test-financial test-roi eval-sanctions eval-rag scenarios ablation train-gnn run-backend run-frontend docker-build docker-up ci-local
 
 help:
 	@echo "make setup          - create venv + install lite requirements (fastapi layer)"
 	@echo "make smoke          - fresh-venv import + end-to-end pipeline gate (Step 0)"
-	@echo "make test           - stdlib unit tests (backend/tests/test_core.py)"
+	@echo "make test           - stdlib unit tests (core + financial + ROI)"
+	@echo "make test-financial - money/eligibility/quote-lifecycle edge cases"
+	@echo "make test-roi       - ROI model hand-computed checks"
 	@echo "make eval-sanctions - sanctions matcher benchmark: precision/recall/FPR/FNR (Step 1)"
 	@echo "make eval-rag       - regulatory retrieval hit@k benchmark (Step 3)"
+	@echo "make scenarios      - end-to-end scenarios A-H -> docs/evaluation_report.json"
 	@echo "make ablation       - risk-model ablation: rule vs logistic vs boosted vs GCN (Step 2)"
 	@echo "make train-gnn      - retrain the GNN checkpoint (writes ml/model.pt + eval.json)"
 	@echo "make run-backend    - uvicorn on :8000"
 	@echo "make run-frontend   - next dev on :3000"
 	@echo "make docker-build   - build the full-system image (Step 6)"
 	@echo "make docker-up      - docker compose up (backend + frontend)"
-	@echo "make ci-local       - everything CI runs: smoke + test + eval-sanctions + eval-rag"
+	@echo "make ci-local       - everything CI runs: smoke + test + evals + scenarios"
 
 setup:
 	$(PY) -m venv $(VENV)
@@ -33,12 +36,23 @@ smoke: $(VENV)/.lite-installed
 
 test:
 	$(PY) backend/tests/test_core.py
+	$(PY) backend/tests/test_financial.py
+	$(PY) backend/tests/test_roi.py
+
+test-financial:
+	$(PY) backend/tests/test_financial.py
+
+test-roi:
+	$(PY) backend/tests/test_roi.py
 
 eval-sanctions:
 	$(PY) backend/evals/eval_sanctions.py
 
 eval-rag:
 	$(PY) backend/evals/eval_rag.py
+
+scenarios: $(VENV)/.lite-installed
+	$(VPY) backend/evals/eval_scenarios.py
 
 ablation: $(VENV)/.lite-installed
 	$(VPY) backend/ml/ablation.py
@@ -61,5 +75,5 @@ docker-build:
 docker-up:
 	docker compose up --build
 
-ci-local: smoke test eval-sanctions eval-rag
+ci-local: smoke test eval-sanctions eval-rag scenarios
 	@echo "CI-equivalent local run: ALL GREEN"

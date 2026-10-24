@@ -20,15 +20,36 @@ def _simulated_hash(tx_seed: str) -> str:
     return hashlib.sha256(("borderless-money:" + tx_seed).encode()).hexdigest()
 
 
-def simulate_settlement(route_name: str, amount_source: float) -> dict:
-    """Deterministic, clearly-labeled simulated settlement result."""
+def simulate_settlement(route_name: str, amount_source: float,
+                        outcome: str = "COMPLETED") -> dict:
+    """Deterministic, clearly-labeled simulated settlement result.
+
+    `outcome` exists so the demo/eval can exercise the uncertain-settlement
+    path honestly: TIMEOUT/FAILED are returned as exactly that — never
+    relabeled as success downstream. Only COMPLETED carries a hash."""
     tx_seed = uuid.uuid4().hex
-    return {
-        "status": "COMPLETED",
-        "stellar_hash": _simulated_hash(tx_seed),
-        "network": "SIMULATED",
-        "simulated": True,
-        "memo": _memo(tx_seed),
-        "fallback_reason": "simulated by design — no funded testnet credentials configured",
-        "explorer_url": None,
-    }
+    if outcome == "COMPLETED":
+        return {
+            "status": "COMPLETED",
+            "stellar_hash": _simulated_hash(tx_seed),
+            "network": "SIMULATED",
+            "simulated": True,
+            "memo": _memo(tx_seed),
+            "fallback_reason": "simulated by design — no funded testnet credentials configured",
+            "explorer_url": None,
+        }
+    if outcome in ("TIMEOUT", "FAILED"):
+        return {
+            "status": outcome,
+            "stellar_hash": None,
+            "network": "SIMULATED",
+            "simulated": True,
+            "memo": _memo(tx_seed),
+            "fallback_reason": (
+                f"simulated {outcome.lower()} injected by the demo harness — "
+                "execution status is UNCERTAIN and must be reconciled; "
+                "this is never a success"),
+            "explorer_url": None,
+            "reconciliation_required": True,
+        }
+    raise ValueError(f"unknown settlement outcome: {outcome!r}")

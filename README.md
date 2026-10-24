@@ -19,6 +19,22 @@ system parses the intent, scores every viable payout rail, screens the transacti
 against predictive RegTech, explains its decision in plain language, and executes on
 the cheapest/fastest compliant route.
 
+**Product positioning:** a **B2B Remittance-Intelligence API** with a user-facing
+demonstration app — *"help remittance providers and fintech platforms compare eligible
+transfer routes, maximize the recipient's net amount, understand compliance restrictions,
+and explain every recommendation using traceable evidence."* Business model, ROI model
+(unit-tested, frontend calculator at `/roi`) and validation plan:
+[docs/PRODUCT_STRATEGY.md](docs/PRODUCT_STRATEGY.md).
+
+### Execution safety (quote lifecycle)
+
+Every quote is a persisted artifact (`quote_id` + expiry). Execution **binds** to the
+confirmed quote: expired, consumed, mismatched or unconfirmed quotes are refused; the
+receipt uses the quoted numbers verbatim; `Idempotency-Key` makes retries safe; and an
+injected settlement `TIMEOUT` is reported as `RECONCILIATION_REQUIRED` — never as
+success. All math is exact-decimal (`docs/FINANCIAL_MODEL.md`); routes with missing
+pricing are flagged and can never win or settle.
+
 ### 🌟 The Killer Differentiator: True Net-Receive Optimization
 
 Most apps hide fees and spreads. Borderless Money calculates the **exact amount the recipient
@@ -236,13 +252,17 @@ Pass `demo_scenario` in `POST /api/agent/execute`, or pick it in the UI.
 | Method | Path | Purpose |
 | :--- | :--- | :--- |
 | `GET` | `/api/health` | Liveness + available corridors + which optional engines are active |
+| `GET` | `/api/ready` | Readiness: config + store checks |
 | `POST` | `/api/agent/parse-intent` | Text/voice transcript → structured intent (en/bn/ar) |
-| `POST` | `/api/agent/quote` | Orchestrated quote: intent → ranked routes (True Net Receive) → regulatory citations |
-| `POST` | `/api/agent/execute` | Compliance gate → Stellar testnet (or simulated) execution → receipt |
+| `POST` | `/api/agent/quote` | Orchestrated quote: intent → ranked routes (True Net Receive) → regulatory citations → **persisted quote_id** |
+| `POST` | `/api/agent/execute` | Compliance gate → quote binding/revalidation → execution → receipt. `Idempotency-Key` honored |
 | `GET` | `/api/transactions/{id}` | Fetch a stored transaction receipt |
+| `GET` | `/api/quotes/{quote_id}` | Quote details with live status (`ACTIVE`/`EXPIRED`/`CONSUMED`) |
 | `GET` | `/api/routes/compare` | Direct Layer A access: compare routes (`?corridor=uae_bd\|ksa_bd`) |
 | `GET` | `/metrics` | Measured KPIs (computed from in-repo eval sets — never invented) |
 
+Cross-cutting: `X-Request-ID` on every response · per-IP rate limiting on `/api/*`
+(ops probes exempt) · optional API-key enforcement (`BORDERLESS_MONEY_API_KEY`).
 Full request/response JSON: [docs/api-contracts.md](docs/api-contracts.md)
 
 ---
@@ -260,6 +280,15 @@ Full request/response JSON: [docs/api-contracts.md](docs/api-contracts.md)
 | OFAC screening recall | **100%** | 10 labeled true positives (exact + ≥85% fuzzy) |
 
 Definitions & honesty notes: [docs/kpis.md](docs/kpis.md)
+
+## 🧩 Upgrade highlights (Oct 25 — B2B + financial-integrity pass)
+
+- **Exact-decimal money engine** — all monetary arithmetic in `Decimal` (`services/money.py`); half-up rounding at display edges, exact `*_exact` strings in every breakdown, NaN/garbage rejected, missing fees flagged (never zeroed) and such routes barred from winning *and* settling.
+- **Quote lifecycle** — persisted quotes with TTL; execution binds to the confirmed quote (expired/consumed/mismatched/unconfirmed refused); `Idempotency-Key` retries; injected settlement timeouts surface as `RECONCILIATION_REQUIRED`, never fake success.
+- **B2B layer** — ROI engine + `/roi` calculator (hand-computed tests), product strategy, business-validation kit with an EMPTY (non-invented) results log: [docs/PRODUCT_STRATEGY.md](docs/PRODUCT_STRATEGY.md).
+- **API hardening** — `X-Request-ID` tracing, per-IP rate limiting, optional `X-API-Key`, `/api/ready`, structured quote-binding error codes (verified over live HTTP).
+- **Scenario evaluation A–H** — the product tested like a judge: adaptive re-ranking, expired quotes, compliance holds, provider failures, uncertain settlement, adversarial input, Bengali/Banglish. Report: [docs/evaluation_report.json](docs/evaluation_report.json).
+- **Screening fix** — bare recipient names in free text are now extracted and screened instead of being silently replaced by the demo persona.
 
 ## 🧩 Upgrade highlights (Oct 24)
 
@@ -288,13 +317,19 @@ would require — lives in [REAL_VS_SIMULATED.md](REAL_VS_SIMULATED.md).
 ## 🧪 One-command verification (judges)
 
 ```bash
-make smoke           # fresh venv: imports + end-to-end pipeline gate (<60s)
-make test            # stdlib unit suite
-make eval-sanctions  # sanctions benchmark: true hits BLOCK, near-misses REVIEW, 0% FPR
-make eval-rag        # regulatory retrieval hit@2 + citation-domain check
-make ablation        # risk-model ablation: rule vs logistic vs boosted vs GCN
-make ci-local        # all of the above, CI-equivalent
+make smoke            # fresh venv: imports + end-to-end pipeline gate (<60s)
+make test             # stdlib unit suites: core + financial edge cases + ROI model
+make test-financial   # money math / eligibility / quote-lifecycle edge cases
+make test-roi         # ROI model vs hand-computed values
+make eval-sanctions   # sanctions benchmark: true hits BLOCK, near-misses REVIEW, 0% FPR
+make eval-rag         # regulatory retrieval hit@2 + citation-domain check
+make scenarios        # end-to-end scenarios A–H → docs/evaluation_report.json
+make ablation         # risk-model ablation: rule vs logistic vs boosted vs GCN
+make ci-local         # all of the above, CI-equivalent
 ```
+
+Scenario results live in [docs/evaluation_report.json](docs/evaluation_report.json)
+(generated by `make scenarios` — machine-readable, timestamped, with data-type labels).
 
 Repo integrity: `git ls-files | grep routing_scorer` → committed (the reviewer's
 export tool parsed 41 of 67 files; nothing was missing from the repo itself —
@@ -330,6 +365,13 @@ Competition mapping against the AI Builders Congress (verified judging criteria,
 analysis, advisory review): [docs/competition-analysis.md](docs/competition-analysis.md).
 One-pager: [docs/one-pager.md](docs/one-pager.md) · Submission week plan:
 [docs/submission-plan.md](docs/submission-plan.md) · KPIs: [docs/kpis.md](docs/kpis.md).
+
+**New documentation (Oct 25):** financial calculation contract
+([FINANCIAL_MODEL](docs/FINANCIAL_MODEL.md)) · product strategy & ROI
+([PRODUCT_STRATEGY](docs/PRODUCT_STRATEGY.md)) · customer-discovery kit
+([business-validation](docs/business-validation.md)) · threat model &
+responsible-AI limits ([SECURITY_AND_RESPONSIBLE_AI](docs/SECURITY_AND_RESPONSIBLE_AI.md))
+· what was actually run ([VALIDATION_REPORT](docs/VALIDATION_REPORT.md)).
 
 ---
 

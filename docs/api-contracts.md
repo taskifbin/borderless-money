@@ -4,6 +4,32 @@ Base URL (dev): `http://localhost:8000` · Interactive docs: `/docs`
 These contracts are the team-wide interface — frontend and B2B RaaS consumers build
 against them.
 
+## Cross-cutting (added Oct 25)
+
+- **Request tracing:** every response carries `X-Request-ID` (client-supplied
+  echoed if sane, else generated).
+- **Rate limiting:** per-IP fixed window on `/api/*` except `/api/health`,
+  `/api/ready` (default 240/minute, env `BORDERLESS_MONEY_RATE_LIMIT`).
+  Exceeded → `429` with `{"error": {"code": "rate_limited", ...}}`.
+- **Optional API key:** set `BORDERLESS_MONEY_API_KEY` to require `X-API-Key`
+  on the private endpoints (`/api/agent/*`, `/api/transactions/*`,
+  `/api/quotes/*`); unset = demo-open. `/api/health`, `/api/ready`,
+  `/api/routes/compare`, `/metrics` stay open (no private data behind them).
+- **Idempotency:** `POST /api/agent/execute` honors the `Idempotency-Key`
+  header — retries return the ORIGINAL response with `idempotent_replay: true`.
+
+---
+
+## `GET /api/health` — liveness (see below)
+
+## `GET /api/ready`
+
+Readiness with component checks:
+
+```json
+{"status": "ready", "checks": {"corridor_config": "ok", "store": "ok"}}
+```
+
 ---
 
 ## `GET /api/health`
@@ -121,15 +147,45 @@ No money moves.
 }
 ```
 
-`routes` is sorted best-first by `true_net_receive_bdt`. `advantage_bdt_vs_best` is how
-many BDT *less* this route delivers than the winner (0 for the winner).
+`routes` is sorted best-first by expected value (`true_net × success_rate`).
+`advantage_bdt_vs_best` is how many BDT *less* this route delivers than the winner
+(0 for the winner; `null` for routes flagged ineligible).
+
+**Pricing completeness & eligibility (every route):**
+
+```json
+{
+  "incentive_eligible": true,
+  "expected_value_bdt": 32819.02,
+  "expected_value_exact": "32819.02",
+  "eligibility": {"eligible": true, "reason": null, "note": null},
+  "pricing_completeness": "complete",
+  "missing_fields": []
+}
+```
+
+A route with missing fee data returns `eligibility.eligible: false, reason:
+"missing_fee_data"`, `fee_aed/expected_value_bdt/breakdown.true_net_receive_bdt`
+all `null` (never silently zero), is ranked last and can never be `is_best`.
+
+**Quote artifact (quote + execute responses):**
+
+```json
+{"quote_id": "q_c1dec8380bcd", "quote_expires_at": "2026-10-24T21:07:43Z"}
+```
+
+Every quote is persisted with its TTL (corridor `quote_ttl_minutes`, default 60)
+and the exact route set it contained.
 
 ---
 
 ## `POST /api/agent/execute`
 
-Compliance gate → (if CLEAR) execution → stored receipt. Idempotent per call; each
-call is a new transaction.
+Compliance gate → (if CLEAR) execution → stored receipt. **Safe repetition:**
+send an `Idempotency-Key` header — retries return the original response instead
+of settling twice. **Quote binding:** pass `quote_id` + `confirmed: true` to
+settle the exact quoted numbers; expired/mismatched/unconfirmed quotes are
+refused with a structured error.
 
 **Request**
 ```json
@@ -139,13 +195,22 @@ call is a new transaction.
   "payout_method": "BKASH",
   "selected_route_name": "Stellar Hybrid Anchor → BKASH",
   "recipient_name": "Ayesha Begum",
-  "demo_scenario": "default"
+  "demo_scenario": "default",
+  "quote_id": "q_c1dec8380bcd",
+  "confirmed": true
 }
 ```
 
 `demo_scenario` ∈ `default | fuzzy_review | high_risk` (see README). All fields
 optional except `selected_route_name` — without `text`/`amount`, the demo corridor
-default (1,000 AED → bKash) applies.
+default (1,000 AED → bKash) applies. `settlement_outcome`
+(`COMPLETED | TIMEOUT | FAILED`) is a labeled demo hook for the reconciliation
+path; production callers leave it at `COMPLETED`.
+
+**Quote-binding errors (HTTP 400, `detail` = code):**
+`quote_not_found` · `quote_expired` · `quote_already_used` · `route_not_in_quote`
+· `amount_mismatch` · `payout_method_mismatch` · `confirmation_required` ·
+`incomplete_pricing`.
 
 **Response** — orchestrator state; the new parts:
 
@@ -193,10 +258,25 @@ A hard OFAC block returns `decision: "BLOCKED"`, `transaction.status: "BLOCKED"`
 
 ## `GET /api/transactions/{transaction_id}` → stored `transaction` (404 if unknown)
 
-## `GET /api/routes/compare?amount=1000&payout_method=BKASH`
+## `GET /api/quotes/{quote_id}` → stored quote with LIVE status
 
-Direct Layer A access (no agent): `{"routes": [RouteOption, …]}` — same shape as
-`routes` in `/api/agent/quote`.
+```json
+{"quote_id": "q_20d1c332ffde", "status": "ACTIVE", "created_at": "…",
+ "expires_at": "2026-10-24T21:07:43Z", "ttl_minutes": 60,
+ "amount": 1000.0, "payout_method": "BKASH", "route_names": ["…"],
+ "selected_route_name": "Stellar Hybrid Anchor → BKASH", "routes": [RouteOption, …]}
+```
+
+`status` is computed live: `ACTIVE` → `EXPIRED` (past `expires_at`) →
+`CONSUMED` (used by an execution; single use). 404 if unknown.
+
+## `GET /api/routes/compare?amount=1000&payout_method=BKASH&corridor=uae_bd&deadline_hours=3`
+
+Direct Layer A access (no agent): `{"routes": [RouteOption, …], "baseline": {…},
+"data_sources": {…}}` — same route shape as `/api/agent/quote`, plus the naive
+cheapest-fee baseline and FX/horizon data-source labels.
+
+## `GET /metrics` — measured KPIs (never invented; see docs/kpis.md)
 
 ---
 
@@ -205,3 +285,6 @@ Direct Layer A access (no agent): `{"routes": [RouteOption, …]}` — same shap
 ```json
 {"detail": "Could not parse any amount from the provided text"}
 ```
+
+Structured machine codes: quote-binding errors (list above) surface verbatim in
+`detail`; rate limiting returns `{"error": {"code": "rate_limited", …}}`.

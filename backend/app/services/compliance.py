@@ -237,8 +237,14 @@ def to_pacs_008(transaction: dict) -> dict:
     """
     msg_id = ("BM" + transaction["transaction_id"].replace("-", "")[:8]).upper()[:16]
     breakdown = transaction["breakdown"]
+    net = breakdown.get("true_net_receive_bdt")
+    if net is None:
+        # An ISO message with a made-up amount would be worse than none: an
+        # unpriced route must never reach settlement (orchestrator refuses it).
+        raise ValueError(
+            "cannot produce pacs.008: settlement amount unknown (incomplete pricing)")
     settlement = round(
-        breakdown["true_net_receive_bdt"] - (breakdown.get("govt_incentive_added_bdt") or 0.0), 2
+        net - (breakdown.get("govt_incentive_added_bdt") or 0.0), 2
     )
     incentive = round(breakdown.get("govt_incentive_added_bdt") or 0.0, 2)
     return {

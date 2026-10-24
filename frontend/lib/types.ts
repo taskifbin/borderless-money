@@ -15,14 +15,19 @@ export interface Breakdown {
   amount_source: number;
   currency_source: string;
   fx_rate: number;
-  fee_source: number;
-  gross_bdt: number;
-  fees_deducted_bdt: number;
+  fee_source: number | null;
+  gross_bdt: number | null;
+  fees_deducted_bdt: number | null;
   govt_incentive_rate: number;
-  govt_incentive_added_bdt: number;
-  true_net_receive_bdt: number;
+  govt_incentive_added_bdt: number | null;
+  true_net_receive_bdt: number | null;
   route: string;
   settlement_time_hrs?: number;
+  // exact decimal strings from the money engine (authoritative values)
+  true_net_receive_exact?: string;
+  gross_exact?: string;
+  pricing_completeness?: "complete" | "incomplete";
+  missing_fields?: string[];
 }
 
 export interface RouteOption {
@@ -32,11 +37,15 @@ export interface RouteOption {
   fx_rate: number;
   mid_market_rate: number;
   spread_bdt_per_aed: number;
-  fee_aed: number;
+  fee_aed: number | null;
   settlement_time_hrs: number;
   success_rate: number;
   is_best: boolean;
-  advantage_bdt_vs_best: number;
+  advantage_bdt_vs_best: number | null;
+  incentive_eligible: boolean;
+  expected_value_bdt: number | null;
+  pricing_completeness: "complete" | "incomplete";
+  eligibility: { eligible: boolean; reason: string | null; note: string | null };
   breakdown: Breakdown;
 }
 
@@ -81,16 +90,21 @@ export interface TransactionRecord {
   amount_source: number;
   currency_source: string;
   fx_rate_applied: number | null;
-  fee_deducted_aed: number | null;
+  fee_deducted_aed?: number | null;
+  fee_deducted_source?: number | null;
   govt_incentive_2_5_pct: number | null;
   true_net_receive_bdt: number | null;
   route_selected: string | null;
+  quote_id?: string | null;
+  quote_binding?: "bound" | "fresh_unbound_demo" | null;
   stellar_hash: string | null;
   status: string;
   created_at: string;
   breakdown: Breakdown;
   iso_20022?: Record<string, unknown>;
   hold_reason?: string;
+  reconciliation_required?: boolean;
+  execution_status?: string;
 }
 
 export type Decision =
@@ -115,6 +129,10 @@ export interface AgentStateResponse {
   transaction: TransactionRecord | null;
   explanation_log: string[];
   error: string | null;
+  quote_id?: string | null;
+  quote_expires_at?: string | null;
+  quote_binding?: "bound" | "fresh_unbound_demo" | null;
+  idempotent_replay?: boolean;
 }
 
 export type DemoScenario = "default" | "fuzzy_review" | "high_risk";

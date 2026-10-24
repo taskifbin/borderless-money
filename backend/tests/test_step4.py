@@ -76,7 +76,9 @@ class TestCorridorEndToEnd(unittest.TestCase):
         self.assertIsNone(state["error"])
         self.assertEqual(state["decision"], "CLEAR")
         self.assertTrue(state["routes"])
-        self.assertEqual(state["transaction"]["currency_source"], "AED")
+        # Regression: receipts must record the corridor's actual source currency
+        # (this used to be hardcoded 'AED', mislabeling SAR transfers).
+        self.assertEqual(state["transaction"]["currency_source"], "SAR")
 
     def test_unknown_corridor_rejected(self):
         state = orchestrator.run("quote", text="send 100 aed", corridor="mars_bd")

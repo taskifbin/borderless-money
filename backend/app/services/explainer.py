@@ -52,15 +52,21 @@ def _route_of(state: dict) -> dict:
     return routes[0] or {}
 
 
+def _money(value, suffix: str) -> str:
+    """Render a money figure; unknown pricing renders as unknown — never 0.00,
+    which would silently assert a fee-free transfer."""
+    return f"— {suffix}" if value is None else f"{value:,.2f} {suffix}"
+
+
 def _template_en(state: dict) -> str:
     decision = state.get("decision", "PENDING")
     if decision == "CLEAR":
         b = _route_of(state).get("breakdown", {})
         return (f"Routed via {_route_of(state).get('rail', 'the best rail')}: they receive "
-                f"{b.get('true_net_receive_bdt', 0):,.2f} BDT — fees "
-                f"{b.get('fees_deducted_bdt', 0):,.2f} BDT deducted and the "
+                f"{_money(b.get('true_net_receive_bdt'), 'BDT')} — fees "
+                f"{_money(b.get('fees_deducted_bdt'), 'BDT')} deducted and the "
                 f"{2.5}% government incentive of "
-                f"{b.get('govt_incentive_added_bdt', 0):,.2f} BDT added, arriving in about "
+                f"{_money(b.get('govt_incentive_added_bdt'), 'BDT')} added, arriving in about "
                 f"{b.get('settlement_time_hrs', 2)} hours.")
     if decision in ("FUZZY_MATCH_REVIEW", "BLOCKED", "HIGH_RISK_REVIEW"):
         return ("We need to verify this transfer before any money moves. No funds "
@@ -74,9 +80,9 @@ def _template_bn(state: dict) -> str:
         b = _route_of(state).get("breakdown", {})
         rail = _route_of(state).get("rail", "সেরা রুট")
         return (f"{rail} দিয়ে পাঠানো হবে: প্রাপক পাবেন "
-                f"{b.get('true_net_receive_bdt', 0):,.2f} টাকা — ফি "
-                f"{b.get('fees_deducted_bdt', 0):,.2f} টাকা বাদ, সরকারি "
-                f"{2.5}% প্রণোদনা {b.get('govt_incentive_added_bdt', 0):,.2f} টাকা যোগ, "
+                f"{_money(b.get('true_net_receive_bdt'), 'টাকা')} — ফি "
+                f"{_money(b.get('fees_deducted_bdt'), 'টাকা')} বাদ, সরকারি "
+                f"{2.5}% প্রণোদনা {_money(b.get('govt_incentive_added_bdt'), 'টাকা')} যোগ, "
                 f"প্রায় {b.get('settlement_time_hrs', 2)} ঘণ্টায় পৌঁছাবে।")
     if decision in ("FUZZY_MATCH_REVIEW", "BLOCKED", "HIGH_RISK_REVIEW"):
         return ("এই লেনদেনটি পাঠানোর আগে যাচাই করতে হবে। আপনার কোনো টাকা যায়নি; "

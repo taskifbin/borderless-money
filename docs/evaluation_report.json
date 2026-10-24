@@ -1,0 +1,92 @@
+{
+  "suite": "borderless-money-scenarios",
+  "generated_at": "2026-10-24T20:18:35.365341+00:00",
+  "environment": "local venv, no external network dependencies; simulated surfaces labeled per scenario",
+  "totals": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8
+  },
+  "scenarios": [
+    {
+      "scenario": "A",
+      "title": "quote → ranked routes → best = Stellar Hybrid @ ৳33,488.80 with 2.5% incentive",
+      "expected": "5 eligible routes ranked by expected value; best ৳33,488.80; quote_id issued; evidence in log",
+      "actual": "best=Stellar Hybrid Anchor → BKASH, net=33488.8, quote_id=q_7e22c1a08e26, log_entries=7",
+      "pass": true,
+      "data_type": "fixture-quotes + deterministic-engine",
+      "failure_detail": "",
+      "timestamp": "2026-10-24T20:18:32Z"
+    },
+    {
+      "scenario": "B",
+      "title": "fee/FX change flips the recommendation to the new optimal route",
+      "expected": "winner changes Stellar Hybrid Anchor → BKASH → Exchange House MTO → BKASH",
+      "actual": "before=Stellar Hybrid Anchor → BKASH, after=Exchange House MTO → BKASH (EV=33016.3)",
+      "pass": true,
+      "data_type": "mutated-fixture + deterministic-engine",
+      "failure_detail": "",
+      "timestamp": "2026-10-24T20:18:32Z"
+    },
+    {
+      "scenario": "C",
+      "title": "stale quote refused, no transfer on expired pricing",
+      "expected": "error=quote_expired; no transaction, no execution",
+      "actual": "error=quote_expired, tx=None, exec=None",
+      "pass": true,
+      "data_type": "deterministic-quote-store",
+      "failure_detail": "",
+      "timestamp": "2026-10-24T20:18:32Z"
+    },
+    {
+      "scenario": "D",
+      "title": "OFAC near-match → HELD for human review, no execution",
+      "expected": "decision=FUZZY_MATCH_REVIEW; status=COMPLIANCE_REVIEW; no execution",
+      "actual": "decision=FUZZY_MATCH_REVIEW, status=COMPLIANCE_REVIEW, exec=None",
+      "pass": true,
+      "data_type": "local-json-sanctions-sample + deterministic-matcher",
+      "failure_detail": "",
+      "timestamp": "2026-10-24T20:18:32Z"
+    },
+    {
+      "scenario": "E",
+      "title": "missing provider pricing → route marked ineligible (never zeroed), winner unaffected",
+      "expected": "Stellar flagged missing_fee_data with no net figures; horizon probe labeled (True)",
+      "actual": "eligibility={'eligible': False, 'reason': 'missing_fee_data', 'note': 'Fee data missing for this rail/last-mile pair; the route cannot be priced or ranked.'}, net=None, winner=Stellar Multi-hop (AED-USD-BDT) → BKASH, horizon_reachable=True",
+      "pass": true,
+      "data_type": "mutated-fixture + live-reachability-probe",
+      "failure_detail": "",
+      "timestamp": "2026-10-24T20:18:35Z"
+    },
+    {
+      "scenario": "F",
+      "title": "timeout → RECONCILIATION_REQUIRED, no hash, no success claim; idempotent replay",
+      "expected": "status=RECONCILIATION_REQUIRED; no hash; replay returns original response",
+      "actual": "status=RECONCILIATION_REQUIRED, hash=None, replay=tx-EVAL-F",
+      "pass": true,
+      "data_type": "simulated-settlement (labeled) + deterministic-store",
+      "failure_detail": "",
+      "timestamp": "2026-10-24T20:18:35Z"
+    },
+    {
+      "scenario": "G",
+      "title": "injection cannot bypass sanctions gate; negative/NaN/unknown-corridor refused",
+      "expected": "injection+listed name → BLOCKED; negative → engine error; NaN → error; unknown corridor → error",
+      "actual": "inj=BLOCKED, neg='transfer principal must be positive, got -500', nan='non-finite monetary value: nan', corridor=\"Unknown corridor 'mars_bd' (no config at /home/taskifbin/Documents/Ai/Hema/backend/config/corridors/mars_bd.json)\"",
+      "pass": true,
+      "data_type": "local-json-sanctions-sample + deterministic-engine",
+      "failure_detail": "",
+      "timestamp": "2026-10-24T20:18:35Z"
+    },
+    {
+      "scenario": "H",
+      "title": "Bengali numerals parse; Banglish parses amount+payout (currency ambiguity noted); vague request → low confidence, asks default; full pipeline runs on Bengali",
+      "expected": "bn=500/BKASH/bn; banglish=1500/BKASH (currency parsed as 'BDT' — known ambiguity, documented); vague=None@0.45; pipeline 5 routes",
+      "actual": "bn=500.0/BKASH/bn; banglish=1500.0/BKASH; vague=None; pipeline_routes=5",
+      "pass": true,
+      "data_type": "deterministic-parser + fixture-quotes",
+      "failure_detail": "",
+      "timestamp": "2026-10-24T20:18:35Z"
+    }
+  ]
+}

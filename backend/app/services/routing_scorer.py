@@ -7,76 +7,119 @@ government incentive is applied ONLY to incentive-eligible rails, and routes
 are ranked by expected value (true net x success rate). A naive
 cheapest-fee baseline is exposed alongside so the ranking's value is
 measurable, not asserted.
+
+Eligibility before optimization (docs/FINANCIAL_MODEL.md §eligibility):
+a route can only win if it has complete pricing. A route with missing fee
+data is flagged `eligibility.eligible=false, reason="missing_fee_data"`, gets
+NO net/EV figures (never a silently-zeroed fee) and can never win. All math
+is exact Decimal (see money.py); floats appear only as display serialization.
 """
 from functools import lru_cache
 
+from decimal import ROUND_HALF_UP
+
 from app.services import corridor as corridor_cfg
-from app.services.incentive import calculate_true_net_receive
+from app.services.incentive import calculate_true_net_receive, calculate_true_net_receive_exact
+from app.services.money import D, quantize, to_number
+
+_DISPLAY = D("0.01")
+_SUCCESS_PRECISION = D("0.0001")
 
 
-def score_routes(amount_source: float, payout_method: str = "BKASH",
+def score_routes(amount_source, payout_method: str = "BKASH",
                  corridor_code: str = corridor_cfg.DEFAULT_CORRIDOR,
                  deadline_hours: float | None = None) -> list[dict]:
     """Enumerate corridor paths, price each with True Net Receive (the 2.5%
-    incentive applied ONLY to incentive-eligible rails), rank by expected value
-    (true net x success rate), best-first."""
+    incentive applied ONLY to incentive-eligible rails), mark eligibility,
+    rank by expected value (true net x success rate), best-first."""
     corridor = corridor_cfg.load_corridor(corridor_code)
     payout_method = (payout_method or corridor["default_payout"]).upper()
     mid = corridor["mid_market_rate"]
     src_ccy = corridor["source_currency"]
+    dest_ccy = corridor["dest_currency"]
+    amount = D(amount_source)
 
-    scored = []
+    scored: list[dict] = []
     for rail in corridor["rails"]:
         rail_name = rail["name"]
         if rail_name not in corridor["last_mile"].get(payout_method, {}):
             continue  # rail does not serve this payout method
         eligible = bool(rail.get("incentive_eligible", True))
-        fee, extra_h, succ = corridor["last_mile"][payout_method][rail_name]
-        fee_total = rail["fee_source"] + fee
+        lm_fee, extra_h, succ = corridor["last_mile"][payout_method][rail_name]
+        rail_fee = rail.get("fee_source")  # absent/None → incomplete pricing
+        fee_total = None if rail_fee is None else D(rail_fee) + D(lm_fee)
         hours = rail["hours"] + extra_h
-        success = rail["success_rate"] * succ
+        success = D(rail["success_rate"]) * D(succ)
         name = f"{rail_name} → {payout_method}"
-        breakdown = calculate_true_net_receive(
-            amount_source, rail["fx"], fee_total, route=name, settlement_time_hrs=hours,
+        priced = calculate_true_net_receive_exact(
+            amount, rail["fx"], fee_total, route=name, settlement_time_hrs=hours,
+            currency_source=src_ccy, dest_currency=dest_ccy,
             govt_incentive_rate=corridor["govt_incentive_rate"] if eligible else 0.0,
         )
-        breakdown["incentive_eligible"] = eligible
-        breakdown["hops"] = rail.get("hops", [corridor["source_currency"], corridor["dest_currency"]])
-        expected_value = round(breakdown["true_net_receive_bdt"] * success, 2)
-        scored.append({
+        pricing_ok = not priced["incomplete"]
+        net = priced["values"]["true_net_dest"]
+        ev = None if net is None else quantize(net * success, dest_ccy)
+
+        route = {
             "name": name,
             "rail": rail_name,
             "payout_method": payout_method,
-            "fx_rate": rail["fx"],
+            "fx_rate": to_number(D(rail["fx"])),
             "mid_market_rate": mid,
-            "spread_bdt_per_aed": round(mid - rail["fx"], 2),
-            "fee_aed": round(fee_total, 2),
+            "spread_bdt_per_aed": to_number(quantize(D(mid) - D(rail["fx"]), dest_ccy)),
+            "fee_aed": to_number(priced["values"]["fee_source"]) if fee_total is not None else None,
             "settlement_time_hrs": hours,
-            "success_rate": round(success, 4),
+            "success_rate": float(success.quantize(_SUCCESS_PRECISION, rounding=ROUND_HALF_UP)),
             "incentive_eligible": eligible,
-            "expected_value_bdt": expected_value,
+            "expected_value_bdt": to_number(ev) if ev is not None else None,
+            "expected_value_exact": str(ev) if ev is not None else None,
+            "eligibility": {
+                "eligible": pricing_ok,
+                "reason": None if pricing_ok else "missing_fee_data",
+                "note": None if pricing_ok else
+                "Fee data missing for this rail/last-mile pair; the route cannot be priced or ranked.",
+            },
+            "pricing_completeness": "complete" if pricing_ok else "incomplete",
+            "missing_fields": priced["missing"],
             "ranking_rationale": ("ranked by expected value = true net x success rate; "
                                   "the 2.5% incentive applies only to incentive-eligible rails"),
             "is_best": False,
-            "advantage_bdt_vs_best": 0.0,
-            "breakdown": breakdown,
-        })
+            "advantage_bdt_vs_best": None,
+            "breakdown": calculate_true_net_receive(
+                amount, rail["fx"], fee_total, route=name, settlement_time_hrs=hours,
+                currency_source=src_ccy, dest_currency=dest_ccy,
+                govt_incentive_rate=corridor["govt_incentive_rate"] if eligible else 0.0,
+            ),
+        }
+        route["breakdown"]["incentive_eligible"] = eligible
+        route["breakdown"]["hops"] = rail.get("hops", [src_ccy, dest_ccy])
+        scored.append(route)
 
     if deadline_hours is not None:
         scored = [r for r in scored if r["settlement_time_hrs"] <= deadline_hours]
-        if not scored:
+        if not any(r["expected_value_bdt"] is not None for r in scored):
             raise ValueError(f"No route arrives within {deadline_hours}h for '{payout_method}'")
-    scored.sort(key=lambda r: r["expected_value_bdt"], reverse=True)
-    best_ev = scored[0]["expected_value_bdt"]
-    for i, route in enumerate(scored):
-        route["is_best"] = i == 0
-        route["advantage_bdt_vs_best"] = round(best_ev - route["expected_value_bdt"], 2)
-    return scored
+
+    complete = [r for r in scored if r["expected_value_bdt"] is not None]
+    incomplete = [r for r in scored if r["expected_value_bdt"] is None]
+    # Stable sort: identical candidates keep config order (deterministic output).
+    complete.sort(key=lambda r: D(r["expected_value_exact"]), reverse=True)
+    ranked = complete + incomplete
+
+    if complete:
+        best_ev = D(complete[0]["expected_value_exact"])
+        for i, route in enumerate(ranked):
+            route["is_best"] = i == 0
+            if route["expected_value_exact"] is not None:
+                route["advantage_bdt_vs_best"] = to_number(
+                    quantize(best_ev - D(route["expected_value_exact"]), dest_ccy))
+    return ranked
 
 
 def naive_baseline(routes: list[dict]) -> dict | None:
     """The route a fee-only comparison would pick — the baseline the expected-
-    value ranking is measured against."""
-    if not routes:
+    value ranking is measured against. Routes with unknown fees cannot play."""
+    priced = [r for r in routes if r["fee_aed"] is not None and r["expected_value_bdt"] is not None]
+    if not priced:
         return None
-    return min(routes, key=lambda r: (r["fee_aed"], -r["expected_value_bdt"]))
+    return min(priced, key=lambda r: (r["fee_aed"], -r["expected_value_bdt"]))

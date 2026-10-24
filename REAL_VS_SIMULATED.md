@@ -28,6 +28,14 @@ sprint. If a claim is not in this table, it does not exist.
 | bKash/Nagad payout | **SIMULATED** | mock registry `data/recipients.json` |
 | pacs.008 payload | **REAL mapping, subset-validated** | settlement amount = gross − fees (incentive excluded, paid separately); validated against the documented subset in `docs/pacs008-subset.md` |
 | Held payments move no money | **REAL (tested)** | REVIEW/BLOCK → no `execution`, no ledger hash, status `COMPLIANCE_REVIEW`/`BLOCKED` (`test_smoke.py::test_held_payment_moves_no_money`) |
+| Exact-decimal money math | **REAL (new Oct 25)** | all monetary arithmetic is `Decimal` (`services/money.py`, `incentive.py`); display floats are quantized half-up at the edge and exact `*_exact` strings travel with every breakdown (`tests/test_financial.py`) |
+| Quote lifecycle (ID, TTL, binding, single use) | **REAL (new Oct 25)** | every quote persisted (`services/quotes.py`); execute refuses expired/consumed/mismatched/unconfirmed quotes; receipt uses quoted numbers verbatim (`tests/test_financial.py::TestExecuteBindingSafety`, scenario C) |
+| Idempotent execution | **REAL (new Oct 25)** | `Idempotency-Key` first-response-wins (in-memory/SQLite per process); verified over HTTP + scenario F |
+| Uncertain settlement honesty | **REAL (new Oct 25)** | injected `TIMEOUT` → `RECONCILIATION_REQUIRED`, no hash, no success claim (scenario F) |
+| Missing-fee honesty | **REAL (new Oct 25)** | unpriced route → flagged ineligible, no net figures, refused at settlement; pacs.008 raises rather than invent an amount (`test_unpriced_route_refused_at_settlement`) |
+| B2B ROI model | **REAL math, ASSUMPTION inputs** | `services/roi.py` + `/roi` page; hand-computed tests (`tests/test_roi.py`); every input labeled a user assumption, outputs labeled modeled estimates |
+| API hardening (request ID, rate limit, optional API key, readiness) | **REAL (new Oct 25)** | verified over live HTTP: 401 without key, 429 over limit, `X-Request-ID` on responses, `/api/ready` checks |
+| Recipient screening of bare names in free text | **REAL (fixed Oct 25)** | parser now extracts bare proper-noun recipients ("send to Jahangir Alam via bkash") so they are SCREENED instead of silently replaced by the demo persona (scenario G) |
 
 ## What a REAL Stellar testnet demo would require
 

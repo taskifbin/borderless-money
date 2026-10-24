@@ -34,11 +34,25 @@ export function getQuote(params: QuoteParams): Promise<AgentStateResponse> {
 }
 
 export interface ExecuteParams extends QuoteParams {
-  selected_route_name: string;
+  selected_route_name?: string;
+  /** Bind execution to the quote the user confirmed (from the quote response). */
+  quote_id?: string;
+  /** Must be true when quote_id is supplied — the explicit confirmation gate. */
+  confirmed?: boolean;
+  /** Demo hook: inject an uncertain settlement outcome (reconciliation path). */
+  settlement_outcome?: "COMPLETED" | "TIMEOUT" | "FAILED";
 }
 
 export function executeTransfer(params: ExecuteParams): Promise<AgentStateResponse> {
   return post<AgentStateResponse>("/api/agent/execute", params);
+}
+
+/** Fetch a persisted quote with its live expiry status. */
+export function getQuoteById(quoteId: string): Promise<Record<string, unknown>> {
+  return fetch(`${API_BASE}/api/quotes/${encodeURIComponent(quoteId)}`).then(res => {
+    if (!res.ok) throw new Error(res.statusText);
+    return res.json() as Promise<Record<string, unknown>>;
+  });
 }
 
 export const fmtBDT = (v: number | null | undefined) =>

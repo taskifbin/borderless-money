@@ -81,14 +81,19 @@ Every rail, FX rate, fee, and last-mile rule lives in the corridor config
   timestamps and a live Horizon reachability probe in `data_sources`.
 
 ### Incentive Engine (`services/incentive.py`)
-Pure, dependency-free, exactly testable:
+Pure, dependency-free, exactly testable — and computed in **exact Decimal**
+arithmetic (`services/money.py`); floats exist only as display serialization,
+with the authoritative value traveling alongside as `*_exact` decimal strings:
 
 ```
-gross_bdt          = amount_aed × fx
-fees_deducted_bdt  = fee_aed × fx
-govt_incentive_bdt = gross_bdt × 0.025        # Bangladesh Bank circular
-true_net_receive   = gross − fees + incentive
+gross_dest       = amount × fx
+fees_dest        = fee × fx                     # fee quoted in source ccy
+govt_incentive   = gross_dest × govt_incentive_rate   # BB circular; eligible rails only
+true_net_receive = gross_dest − fees_dest + govt_incentive
 ```
+
+Missing fee data ⇒ NO net figure (never a silent zero), route flagged
+ineligible, refused at settlement. Full contract: docs/FINANCIAL_MODEL.md.
 
 ### GNN RegTech (`services/gnn_risk.py`)
 - `RemittanceGNN` — a 2-layer GCN (PyTorch Geometric) over the transaction subgraph
@@ -100,17 +105,19 @@ true_net_receive   = gross − fees + incentive
   Score > 0.8 → `requires_manual_review`.
 
 ### Compliance Gate (`services/compliance.py`)
-- OFAC screening with `difflib.SequenceMatcher`: exact hit → `BLOCKED`,
+- OFAC screening matcher v2 — Unicode/whitespace normalization + **Jaro-Winkler**
+  with token-coverage: exact hit → `BLOCKED`,
   similarity ≥ 0.85 → `FUZZY_MATCH_REVIEW` (human in the loop, zero silent false
   rejections), else `CLEAR`. List ships as local JSON.
 - ISO 20022 mapping (`to_pacs_008`) attaches a pacs.008-shaped payload to every
   executed transaction — familiar territory for banking judges.
 
 ### Execution (`services/stellar.py`)
-If `stellar-sdk` is installed **and** `STELLAR_SECRET_KEY` is set, a testnet path
-payment is attempted; any failure — or absence of the SDK — falls back to a
-deterministic simulated hash. `network: "SIMULATED" | "TESTNET"` is always explicit,
-in the API and on the receipt.
+Simulated by design (an earlier testnet "attempt" could never work and was
+removed — see REAL_VS_SIMULATED.md). Returns a clearly-labeled `SIMULATED`
+result; the demo harness may inject `outcome=TIMEOUT|FAILED` to exercise the
+uncertain-settlement path, which is NEVER reported as success: the transaction
+becomes `RECONCILIATION_REQUIRED` with no hash. `network` is always explicit.
 
 ## Data Flow — Happy Path (sequence)
 
@@ -140,3 +147,33 @@ Voice "Send 1,000 dirhams to my mother's bKash in Dhaka"
 
 PostgreSQL is the production store (`db/schema.sql`); the demo store is in-memory with
 optional SQLite persistence via `BORDERLESS_MONEY_DB_PATH` — zero setup for judges.
+
+## Quote Lifecycle & Failure Paths (added Oct 25)
+
+Every quote is a persisted artifact (`services/quotes.py`): `quote_id`,
+`created_at`, `expires_at` (TTL from corridor `quote_ttl_minutes`, default 60
+min), the full ranked route set and the selected route. Execution can bind to
+it: `POST /api/agent/execute` with `quote_id` + `confirmed: true` revalidates —
+exists → not expired → not consumed (single use) → route ∈ quoted set → amount
+matches — and the receipt uses **the quoted numbers verbatim**. Failure codes:
+`quote_not_found` / `quote_expired` / `quote_already_used` / `route_not_in_quote`
+/ `amount_mismatch` / `payout_method_mismatch` / `confirmation_required` /
+`incomplete_pricing`. The unbound demo path (no quote_id) is labeled
+`fresh_unbound_demo` in the receipt.
+
+API-level duplicates are absorbed by the `Idempotency-Key` header (first
+response wins, replays labeled `idempotent_replay`). Cross-cutting: `X-Request-ID`
+on every response, per-IP rate limiting on `/api/*` (ops probes exempt),
+optional `X-API-Key` enforcement via `BORDERLESS_MONEY_API_KEY`.
+
+Failure paths, all exercised in `backend/evals/eval_scenarios.py`
+(docs/evaluation_report.json):
+
+| Failure | Behavior |
+| :--- | :--- |
+| Quote provider outage / missing pricing | Route flagged `missing_fee_data`, no net figures, excluded from ranking; Horizon probe reports reachability + timestamp |
+| Expired quote at execution | `quote_expired` refusal, no transaction (scenario C) |
+| Compliance hold | Structural gate: no execution path reaches settlement on `FUZZY_MATCH_REVIEW`/`BLOCKED`/`HIGH_RISK_REVIEW` (scenario D) |
+| Prompt injection in free text | Deterministic parser extracts the request; injected instructions have no effect; named recipients are screened (scenario G) |
+| Uncertain settlement | `RECONCILIATION_REQUIRED`, no hash, no success claim, idempotent replay (scenario F) |
+| Unknown corridor / negative / NaN amounts | Surfaced as errors, never coerced |
