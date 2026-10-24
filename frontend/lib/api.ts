@@ -1,0 +1,52 @@
+import type { AgentStateResponse, DemoScenario } from "./types";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+
+async function post<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    let detail = res.statusText;
+    try {
+      const err = await res.json();
+      detail = err.detail ?? detail;
+    } catch {
+      /* keep statusText */
+    }
+    throw new Error(detail);
+  }
+  return res.json() as Promise<T>;
+}
+
+export interface QuoteParams {
+  text?: string;
+  amount?: number;
+  payout_method?: string;
+  recipient_name?: string;
+  demo_scenario?: DemoScenario;
+}
+
+export function getQuote(params: QuoteParams): Promise<AgentStateResponse> {
+  return post<AgentStateResponse>("/api/agent/quote", params);
+}
+
+export interface ExecuteParams extends QuoteParams {
+  selected_route_name: string;
+}
+
+export function executeTransfer(params: ExecuteParams): Promise<AgentStateResponse> {
+  return post<AgentStateResponse>("/api/agent/execute", params);
+}
+
+export const fmtBDT = (v: number | null | undefined) =>
+  v == null
+    ? "—"
+    : `৳${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+export const fmtAED = (v: number | null | undefined) =>
+  v == null
+    ? "—"
+    : `AED ${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;

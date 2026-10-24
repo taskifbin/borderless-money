@@ -1,0 +1,15 @@
+{
+  "list": "OFAC SDN sample (subset for demo screening only)",
+  "entries": [
+    {"name": "Nasir Uddin Chaudhury", "type": "Individual", "program": "DEMO-SDN-001"},
+    {"name": "Abdul Karim Limited", "type": "Entity", "program": "DEMO-SDN-002"},
+    {"name": "Global Smuggling Network", "type": "Entity", "program": "DEMO-SDN-003"},
+    {"name": "Farhan Ahmed", "type": "Individual", "program": "DEMO-SDN-004"},
+    {"name": "Rashid Trading Co", "type": "Entity", "program": "DEMO-SDN-005"},
+    {"name": "Mohammad Salim", "type": "Individual", "program": "DEMO-SDN-006"},
+    {"name": "Karim Brothers Exchange", "type": "Entity", "program": "DEMO-SDN-007"},
+    {"name": "Selim Reza", "type": "Individual", "program": "DEMO-SDN-008"},
+    {"name": "Golden Crescent Holdings", "type": "Entity", "program": "DEMO-SDN-009"},
+    {"name": "Jahangir Alam", "type": "Individual", "program": "DEMO-SDN-010"}
+  ]
+}

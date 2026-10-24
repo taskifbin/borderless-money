@@ -1,0 +1,25 @@
+{
+  "description": "Sanctions-screening benchmark v1. Labels: 'exact' names hit the sample SDN list verbatim (expect BLOCKED), 'fuzzy' are >=85% similar near-misses (expect FUZZY_MATCH_REVIEW), 'clear' are known-good names (expect CLEAR). Recall and false-positive hold rate are computed from this file.",
+  "cases": [
+    {"name": "Jahangir Alam", "label": "exact"},
+    {"name": "Farhan Ahmed", "label": "exact"},
+    {"name": "Mohammad Salim", "label": "exact"},
+    {"name": "Selim Reza", "label": "exact"},
+    {"name": "Nasir Uddin Chowdhury", "label": "fuzzy"},
+    {"name": "Farhan Ahmad", "label": "fuzzy"},
+    {"name": "Muhammad Salim", "label": "fuzzy"},
+    {"name": "Jahangir Alom", "label": "fuzzy"},
+    {"name": "Rashid Trading Company", "label": "fuzzy"},
+    {"name": "Global Smugling Network", "label": "fuzzy"},
+    {"name": "Ayesha Begum", "label": "clear"},
+    {"name": "Mohammed Rafiq", "label": "clear"},
+    {"name": "Rahim Uddin", "label": "clear"},
+    {"name": "Salma Khatun", "label": "clear"},
+    {"name": "Nusrat Jahan", "label": "clear"},
+    {"name": "Tanvir Hasan", "label": "clear"},
+    {"name": "Rezaul Islam", "label": "clear"},
+    {"name": "Shirin Akter", "label": "clear"},
+    {"name": "Kamal Hossain", "label": "clear"},
+    {"name": "Rubel Mia", "label": "clear"}
+  ]
+}

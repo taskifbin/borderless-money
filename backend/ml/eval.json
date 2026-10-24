@@ -1,0 +1,17 @@
+{
+  "auc": 0.9038,
+  "precision_at_operating_threshold": 0.9455,
+  "recall_at_operating_threshold": 0.8667,
+  "operating_threshold": 0.51,
+  "production_review_threshold": 0.8,
+  "note_on_thresholds": "Raw model scores are uncalibrated sigmoids; the operating threshold is tuned on train only. The production gate in app/services/gnn_risk.py remains 0.8 (policy threshold).",
+  "n_train": 1920,
+  "n_test": 480,
+  "epochs": 200,
+  "seed": 42,
+  "label_noise": 0.02,
+  "fraud_rate": 0.12,
+  "architecture": "RemittanceGNN: 2-layer GCN, 16 -> 32 -> 1, sigmoid",
+  "note": "Synthetic benchmark: fraud patterns mirror the stand-in's risk signals (new device, new account, abnormal amount, unknown recipient, odd hours). With 2% symmetric label noise and a 1:7 class imbalance, the theoretical AUC ceiling for a perfect ranker is ~0.94 \u2014 values near it indicate the model extracts the available signal. Replace with labeled production history before real use.",
+  "trained_at": "2026-10-24T15:54:54Z"
+}

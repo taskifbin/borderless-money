@@ -1,0 +1,29 @@
+{
+  "note": "Mock payout registry (bKash/Nagad/bank) for the demo. Production: operator APIs.",
+  "recipients": [
+    {
+      "id": "rcp_001",
+      "name": "Ayesha Begum",
+      "relationship": "Mother",
+      "handle": "01712-345678 (bKash)",
+      "payout_method": "BKASH",
+      "city": "Dhaka"
+    },
+    {
+      "id": "rcp_002",
+      "name": "Rahim Uddin",
+      "relationship": "Father",
+      "handle": "01819-876543 (Nagad)",
+      "payout_method": "NAGAD",
+      "city": "Chattogram"
+    },
+    {
+      "id": "rcp_003",
+      "name": "Salma Khatun",
+      "relationship": "Sister",
+      "handle": "ACCT-****4821 (City Bank)",
+      "payout_method": "BANK",
+      "city": "Sylhet"
+    }
+  ]
+}

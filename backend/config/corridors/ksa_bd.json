@@ -1,0 +1,51 @@
+{
+  "code": "ksa_bd",
+  "label": "SAR_TO_BDT",
+  "source_currency": "SAR",
+  "dest_currency": "BDT",
+  "source_country": "SA",
+  "dest_country": "BD",
+  "geo_code": "SA->BD",
+  "mid_market_rate": 8.83,
+  "fx_source": "Stub — replace with live FX feed before use",
+  "govt_incentive_rate": 0.025,
+  "govt_incentive_note": "Same Bangladesh Bank incentive applies to formal remittance from any corridor",
+  "rails": [
+    { "name": "Traditional SWIFT", "fx": 8.65, "fee_source": 15.00, "hours": 24.0, "success_rate": 0.97 },
+    { "name": "Stellar Hybrid Anchor", "fx": 8.74, "fee_source": 3.00, "hours": 2.0, "success_rate": 0.98 },
+    { "name": "Exchange House MTO", "fx": 8.60, "fee_source": 10.50, "hours": 6.0, "success_rate": 0.95 }
+  ],
+  "payout_methods": ["BKASH", "NAGAD", "BANK"],
+  "default_payout": "BKASH",
+  "last_mile": {
+    "BKASH": {
+      "Traditional SWIFT": [9.00, 4.0, 1.0],
+      "Stellar Hybrid Anchor": [1.00, 0.0, 1.0],
+      "Exchange House MTO": [1.50, 0.0, 1.0]
+    },
+    "NAGAD": {
+      "Traditional SWIFT": [9.00, 4.0, 1.0],
+      "Stellar Hybrid Anchor": [1.20, 0.0, 1.0],
+      "Exchange House MTO": [1.50, 0.0, 1.0]
+    },
+    "BANK": {
+      "Traditional SWIFT": [5.00, 0.0, 1.0],
+      "Stellar Hybrid Anchor": [2.00, 1.0, 1.0],
+      "Exchange House MTO": [4.00, 2.0, 1.0]
+    }
+  },
+  "default_amount": 1000.0,
+  "default_recipient": "Ayesha Begum",
+  "sanctions_list": "ofac_sample.json",
+  "demo_sender": {
+    "id": "usr_ksa_001",
+    "name": "Demo Sender KSA",
+    "device_fingerprint": "fp_sa_demo",
+    "account_age_days": 365,
+    "avg_send_sar": 1200.0
+  },
+  "demo_recipients": {
+    "Ayesha Begum": { "id": "rcp_001", "relationship": "Mother", "handle": "01712-345678 (bKash)" }
+  },
+  "_note": "Second-corridor stub: proves the engine is config-driven. Rates are placeholders — validate against live corridor data before any real use."
+}
