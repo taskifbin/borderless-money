@@ -26,7 +26,7 @@ the whole design idea: **agency on top, determinism underneath.**
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │            LAYER A: SCORING & EXECUTION ENGINE (Python)          │
-│  📊 routing_scorer.py   NetworkX DiGraph over corridor rails     │
+│  📊 routing_scorer.py   corridor rail pricing, EV ranking        │
 │  🛡️ gnn_risk.py         PyTorch Geometric GCN + stand-in infer   │
 │  ⚖️ compliance.py        OFAC fuzzy matching, ISO 20022 mapping  │
 │  💱 incentive.py        True Net Receive + 2.5% BD incentive     │
@@ -64,14 +64,21 @@ AI is a scoring criterion, and the log is rendered verbatim in the UI.
 ## Layer A — Scoring & Execution
 
 ### Routing Scorer (`services/routing_scorer.py`)
-The UAE→BD corridor is modeled as a directed graph: `send_aed → {rail} → {payout}`.
+Every rail, FX rate, fee, and last-mile rule lives in the corridor config
+(`config/corridors/<code>.json`) — a new corridor is a new file, not code.
 
-- Rails: `Traditional SWIFT`, `Stellar Hybrid Anchor`, `Exchange House MTO`
-- Payout nodes: `bkash`, `nagad`, `bank_bd` (each rail reaches different payouts at
-  different fee/time — SWIFT reaching bKash pays a last-mile partner fee)
-- Paths are enumerated (NetworkX `all_simple_paths` when available; pure-Python
-  fallback otherwise), priced per segment (fee, hours, rail FX, success rate), and
-  ranked by **True Net Receive**.
+- Rails (UAE→BD): `Traditional SWIFT`, `Stellar Hybrid Anchor`, `Exchange House
+  MTO`, `Stellar Multi-hop (AED-USD-BDT)`, and a `Cash Pickup Agent (teaser
+  rate)` sample that is **incentive-ineligible** — it wins on raw numbers and
+  loses once the 2.5% incentive and expected value are applied, demonstrating
+  the eligibility flag as real routing logic
+- Payout legs: `bkash`, `nagad`, `bank` (each rail pays a different last-mile
+  partner fee — SWIFT reaching bKash is the expensive case)
+- Each route is priced end-to-end (rail fee/FX/hours + last-mile leg), the
+  incentive applies **only to eligible rails**, and routes are ranked by
+  **expected value (true net × success rate)**; a naive cheapest-fee baseline is
+  exposed in `/api/routes/compare` alongside the winner, with FX `as_of`
+  timestamps and a live Horizon reachability probe in `data_sources`.
 
 ### Incentive Engine (`services/incentive.py`)
 Pure, dependency-free, exactly testable:

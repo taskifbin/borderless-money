@@ -64,7 +64,7 @@ and the receipt shows exactly why, line by line.
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │            LAYER A: SCORING & EXECUTION ENGINE (Python)          │
-│  📊 Routing Scorer (NetworkX graph search over corridor rails)   │
+│  📊 Routing Scorer (rail pricing: EV ranking + incentive gate)   │
 │  🛡️ Predictive RegTech (GNN risk scoring, PyTorch Geometric)     │
 │  ⚖️ Compliance Gate (OFAC fuzzy matching + ISO 20022 mapping)    │
 │  💱 FX & Incentive Calc (real-time rate + 2.5% BD Govt incentive)│
@@ -109,7 +109,7 @@ Full details: [docs/architecture.md](docs/architecture.md)
 | 1 | **Voice / NL remittance** (low-literacy UX) | Frontend | ✅ Web Speech API + rule-based multilingual intent parser (`intent_parser.py`) |
 | 2 | **Two-layer agentic orchestration** | Layer B | ✅ LangGraph graph with deterministic Python tools; sequential fallback when LangGraph isn’t installed |
 | 3 | **Predictive RegTech** (pre-settlement GNN risk) | Layer A | ✅ PyTorch Geometric `RemittanceGNN` in repo + deterministic stand-in inference so the demo always works |
-| 4 | **Jurisdiction-aware routing + 2.5% incentive math** | Layer A | ✅ NetworkX corridor graph search + `calculate_true_net_receive` |
+| 4 | **Jurisdiction-aware routing + 2.5% incentive math** | Layer A | ✅ Corridor rail pricing + `calculate_true_net_receive`; incentive eligibility is routing logic; ranked by expected value with a naive cheapest-fee baseline |
 
 ---
 
@@ -125,38 +125,77 @@ borderless-money/
 │   └── sprint-plan.md         ← 11-day sprint to Oct 31
 ├── backend/
 │   ├── app/
-│   │   ├── main.py            ← FastAPI app (RaaS API)
-│   │   ├── config.py          ← corridor + demo settings
+│   │   ├── main.py            ← FastAPI app (RaaS API) incl. GET /metrics
+│   │   ├── config.py          ← corridor + demo settings (from corridor config)
 │   │   ├── agent/
 │   │   │   └── orchestrator.py    ← Layer B: LangGraph state machine (+ fallback)
 │   │   ├── services/
 │   │   │   ├── incentive.py       ← True Net Receive engine (2.5% BD incentive)
-│   │   │   ├── routing_scorer.py  ← Layer A: NetworkX corridor graph scorer
+│   │   │   ├── routing_scorer.py  ← corridor rail pricing: EV ranking, incentive
+│   │   │   │                        eligibility, deadline filter, naive baseline
+│   │   │   ├── corridor.py        ← loads config/corridors/*.json (rules as data)
 │   │   │   ├── intent_parser.py   ← multilingual NL/voice intent extraction
-│   │   │   ├── gnn_risk.py        ← Layer A: GNN RegTech (PyG model + stand-in)
-│   │   │   ├── compliance.py      ← OFAC fuzzy matching + ISO 20022 mapping
-│   │   │   ├── stellar.py         ← Stellar testnet path payment (or simulated)
-│   │   │   ├── fx.py              ← FX rate reference data
-│   │   │   └── store.py           ← transaction store (memory/SQLite/Postgres schema)
+│   │   │   ├── gnn_risk.py        ← risk scoring: trained GCN flag + stand-in,
+│   │   │   │                        decision-log explanations
+│   │   │   ├── compliance.py      ← sanctions matcher v2 (normalized Jaro +
+│   │   │   │                        coverage, rationale) + pacs.008 subset
+│   │   │   ├── llm.py             ← bounded LLM access (schema-validated, off
+│   │   │   │                        by default)
+│   │   │   ├── explainer.py       ← grounded en/bn explanations (number guard)
+│   │   │   ├── regulatory_rag.py  ← cited regulatory retrieval (MiniLM or
+│   │   │   │                        lexical fallback)
+│   │   │   ├── horizon.py         ← live Stellar Horizon reachability probe
+│   │   │   ├── stellar.py         ← settlement — SIMULATED by design
+│   │   │   ├── metrics.py         ← GET /metrics: measured KPIs from eval sets
+│   │   │   └── store.py           ← transaction store (memory/SQLite)
 │   │   └── db/
-│   │       └── schema.sql         ← PostgreSQL schema (transactions, regtech_logs)
-│   ├── data/                  ← FX snapshot, OFAC sample, demo recipients
-│   ├── tests/test_core.py     ← runnable with plain python3 (no pytest needed)
+│   │       └── schema.sql         ← PostgreSQL schema (production store)
+│   ├── config/corridors/      ← uae_bd.json + ksa_bd.json (rules as data)
+│   ├── data/                  ← FX snapshot, OFAC sample + eval sets, recipients
+│   ├── rag/corpus/            ← BB / OFAC / ISO 20022 excerpts (cited chunks)
+│   ├── ml/                    ← train_gnn.py + ablation.py + model.pt + evals
+│   ├── evals/                 ← eval_sanctions.py, eval_rag.py (make targets)
+│   ├── tests/                 ← test_core, test_smoke, test_step3, test_step4
+│   ├── Dockerfile             ← full-system backend image
+│   ├── requirements-{full,lite}.txt
 │   └── run_demo.py            ← end-to-end happy path in the terminal
-└── frontend/                  ← Next.js 14 (TS + Tailwind): voice UI, route
-    └── app/ components/ lib/     comparison, compliance panel, receipt
+├── frontend/                  ← Next.js 14 (TS + Tailwind): 4-screen flow,
+│   └── app/ components/ lib/     Bangla toggle, mic, blockchain trail
+├── docker-compose.yml         ← backend + frontend, `docker compose up --build`
+├── Makefile                   ← smoke / test / evals / ablation / docker targets
+├── .github/workflows/ci.yml   ← fresh-checkout CI (tests + docker image)
+└── REAL_VS_SIMULATED.md       ← claim-by-claim truth table
 ```
 
 ---
 
 ## 🚀 Quickstart
 
-### Backend (FastAPI)
+### Docker (full system — recommended)
+
+```bash
+docker compose up --build
+# backend  → http://localhost:8000  (API docs at /docs)
+# frontend → http://localhost:3000
+```
+
+The backend image installs the **full** stack (LangGraph, PyG risk model,
+embeddings) from `backend/requirements-full.txt`. Just the backend image:
+
+```bash
+docker build -t borderless-money-backend -f backend/Dockerfile backend
+docker run -p 8000:8000 borderless-money-backend
+```
+
+Verified: the image builds, boots in ~10 s, and serves the exact demo numbers
+(৳33,488.80) — see [REAL_VS_SIMULATED.md](REAL_VS_SIMULATED.md).
+
+### Backend (FastAPI, local venv)
 
 ```bash
 cd backend
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements-full.txt   # or requirements-lite.txt for the fast path
 uvicorn app.main:app --reload --port 8000
 # API docs: http://localhost:8000/docs
 ```
@@ -270,7 +309,7 @@ runs the full system, verified).
 | :--- | :--- | :--- |
 | **1. AI Orchestrator Lead** | Layer B (LangGraph), intent parsing, tool-calling, explainer | Working orchestrator: voice text → scored tools → explained recommendation |
 | **2. RegTech & Data Lead** | Layer A GNN (PyG), OFAC fuzzy matching, ISO 20022 | Risk endpoint returning score + plain-text explanation |
-| **3. Routing & Incentive Lead** | Routing scorer (NetworkX), **2.5% incentive math**, FX logic | `calculate_true_net_receive` comparing SWIFT vs Stellar Hybrid |
+| **3. Routing & Incentive Lead** | Routing scorer (incentive eligibility, EV ranking), **2.5% incentive math**, FX logic | `calculate_true_net_receive` comparing SWIFT vs Stellar Hybrid |
 | **4. Frontend & UX Lead** | Voice UI, route comparison dashboard, receipt | Polished Next.js flow labeling the “Govt Incentive Added” line |
 | **5. Backend & Stellar Lead** | FastAPI, DB schema, testnet path payment, deployment | Unified backend + logged testnet transaction |
 
