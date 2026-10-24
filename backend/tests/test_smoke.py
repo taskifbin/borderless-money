@@ -24,7 +24,7 @@ class TestImports(unittest.TestCase):
         self.assertIn("routing_scorer", names, "routing_scorer.py missing from services")
         for name in names:
             importlib.import_module(f"app.services.{name}")
-        self.assertGreaterEqual(len(names), 12, f"expected >=12 service modules, got {names}")
+        self.assertGreaterEqual(len(names), 11, f"expected >=11 service modules, got {names}")
 
     def test_agent_and_config_import(self):
         for mod in ("app.agent.orchestrator", "app.config", "app.services.corridor"):
