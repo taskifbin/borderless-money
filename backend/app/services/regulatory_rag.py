@@ -21,14 +21,16 @@ DIM = 512
 TOP_K = 3
 _URL_RE = re.compile(r"https?://[^\s)]+|\((?:www\.)?([a-z0-9.\-]+\.[a-z]{2,})\)")
 
-try:  # optional: real embeddings when available
+try:  # optional: real embeddings when available — loaded LAZILY on first use,
+      # never at import time (an eager HF download would block server startup)
     from sentence_transformers import SentenceTransformer
 
-    _MODEL = SentenceTransformer("all-MiniLM-L6-v2")
-    EMBEDDING_ENGINE = "all-MiniLM-L6-v2"
+    _ST_AVAILABLE = True
 except Exception:  # noqa: BLE001 — lexical fallback is the documented default
-    _MODEL = None
-    EMBEDDING_ENGINE = "lexical-ngram-tf"
+    _ST_AVAILABLE = False
+
+_MODEL = None
+EMBEDDING_ENGINE = "lexical-ngram-tf"
 
 _WORD_RE = re.compile(r"[a-z0-9%]+")
 
@@ -54,6 +56,14 @@ def _lexical_embed(text: str) -> list[float]:
 
 
 def _embed_texts(texts: list[str]) -> list:
+    global _MODEL, EMBEDDING_ENGINE
+    if _ST_AVAILABLE and _MODEL is None:
+        try:  # first retrieval only; bounded failure → lexical fallback
+            _MODEL = SentenceTransformer("all-MiniLM-L6-v2")
+            EMBEDDING_ENGINE = "all-MiniLM-L6-v2"
+        except Exception:  # noqa: BLE001
+            _MODEL = None
+            EMBEDDING_ENGINE = "lexical-ngram-tf"
     if _MODEL is not None:
         return _MODEL.encode(texts, normalize_embeddings=True).tolist()
     return [_lexical_embed(t) for t in texts]
