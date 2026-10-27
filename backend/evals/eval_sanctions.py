@@ -26,6 +26,7 @@ from app.services import compliance  # noqa: E402
 
 EXPECTED = {
     "exact_normalized": "BLOCKED",
+    "alias_only": "FUZZY_MATCH_REVIEW",
     "near_variant": "FUZZY_MATCH_REVIEW",
     "single_token": "FUZZY_MATCH_REVIEW",
     "unscreenable": "FUZZY_MATCH_REVIEW",
@@ -52,7 +53,7 @@ def main() -> int:
 
     print(f"{'category':<18} {'n':>3}  decisions")
     stats = {}
-    for category in ("exact_normalized", "near_variant", "single_token", "unscreenable", "clear"):
+    for category in ("exact_normalized", "alias_only", "near_variant", "single_token", "unscreenable", "clear"):
         rows = results[category]
         counts = defaultdict(int)
         for _, status in rows:
@@ -84,6 +85,7 @@ def main() -> int:
     print(f"false-negative rate on true matches : {fnr:.1%}")
     print(f"block precision                     : {precision_block:.1%}")
     print(f"single-token hard-blocks            : {stats['single_token'].get('BLOCKED', 0)} (policy: 0)")
+    print(f"alias-only equalities BLOCKED       : {stats['alias_only'].get('BLOCKED', 0)} (policy: 0 — review, no second identifier)")
     print(f"unscreenable inputs cleared          : {clear_count_unscreenable(stats)} (policy: 0 — must go to review)")
 
 

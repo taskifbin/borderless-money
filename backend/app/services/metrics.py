@@ -93,19 +93,22 @@ def _compliance_scores() -> tuple[float, float, dict]:
     ev = _load_eval("sanctions_eval.json")
     counts = {"exact": {"n": 0, "flagged": 0}, "near": {"n": 0, "flagged": 0},
               "clear": {"n": 0, "flagged": 0}, "single_token": {"n": 0, "flagged": 0},
-              "unscreenable": {"n": 0, "flagged": 0}}
+              "unscreenable": {"n": 0, "flagged": 0}, "alias_only": {"n": 0, "flagged": 0}}
     for case in ev["cases"]:
         status = compliance.screen_party(case["name"], "eval")["status"]
         bucket = {"exact_normalized": "exact", "near_variant": "near",
-                  "single_token": "single_token", "unscreenable": "unscreenable"}.get(case["category"], "clear")
+                  "single_token": "single_token", "unscreenable": "unscreenable",
+                  "alias_only": "alias_only"}.get(case["category"], "clear")
         counts[bucket]["n"] += 1
         counts[bucket]["flagged"] += status in ("BLOCKED", "FUZZY_MATCH_REVIEW")
-    exact, near, clear, single, unscreenable = (counts["exact"], counts["near"], counts["clear"],
-                                                counts["single_token"], counts["unscreenable"])
+    exact, near, clear, single, unscreenable, alias = (counts["exact"], counts["near"], counts["clear"],
+                                                       counts["single_token"], counts["unscreenable"],
+                                                       counts["alias_only"])
     recall = round(exact["flagged"] / exact["n"] * 100.0, 1) if exact["n"] else 100.0
     fpr = round(clear["flagged"] / clear["n"] * 100.0, 1) if clear["n"] else 0.0
     detail = {
         "true_hits_blocked": f"{exact['flagged']}/{exact['n']}",
+        "alias_only_reviewed": f"{alias['flagged']}/{alias['n']}",
         "near_variants_reviewed": f"{near['flagged']}/{near['n']}",
         "single_token_reviewed": f"{single['flagged']}/{single['n']}",
         "unscreenable_reviewed": f"{unscreenable['flagged']}/{unscreenable['n']}",

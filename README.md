@@ -295,7 +295,7 @@ Full request/response JSON: [docs/api-contracts.md](docs/api-contracts.md)
 | Intent accuracy (en/bn/ar) | **100%** | 49-utterance curated benchmark (`data/intent_eval.json`) |
 | p95 quote latency (engine) | **~2–3 ms** | 20 timed in-process quote runs — live value at `GET /metrics` |
 | Compliance false-positive hold rate | **0.0%** | 21 labeled clear names (`data/sanctions_eval.json`) |
-| OFAC screening recall | **100%** | 14 labeled true positives, exact after normalization (`data/sanctions_eval.json`) |
+| OFAC screening recall | **100%** | 11 labeled true positives (exact/leet after normalization; alias-only matches are held for review, not blocked) (`data/sanctions_eval.json`) |
 
 Definitions & honesty notes: [docs/kpis.md](docs/kpis.md)
 

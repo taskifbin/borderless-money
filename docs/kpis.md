@@ -8,7 +8,7 @@ Every number below is **computed from this repository** — corridor math, eval 
 | `intent_accuracy_pct` | **100.0%** | ≥ 95% | Full-field match (amount, currency, payout, recipient, language) on **49 curated utterances** in en/bn/ar — `backend/data/intent_eval.json`. Parser fixed during measurement: longest-match-first relation extraction, Arabic "بنك", Bengali relation inflections |
 | `p95_quote_latency_ms` | **live at `GET /metrics`** | ≤ 3,000 ms | p95 of 20 in-process end-to-end quote runs — **engine time only** (excludes network + model load); machine-dependent, so the README quotes the endpoint rather than a hard-coded number |
 | `false_positive_hold_rate_pct` | **0.0%** | ≤ 2.0% | 21 known-clear names screened against the sample SDN list — none flagged (`data/sanctions_eval.json`) |
-| `ofac_recall_pct` | **100.0%** | 100% | 14 normalized true hits BLOCKED + 14 near-variants REVIEWED on the realistic benchmark (`make eval-sanctions`) |
+| `ofac_recall_pct` | **100.0%** | 100% | 11 exact/leet true hits BLOCKED + 4 alias-only, 15 near-variants, 5 single-token, 2 unscreenable all REVIEWED on the 58-case benchmark (`make eval-sanctions`) |
 
 ## Public baseline (external comparison)
 

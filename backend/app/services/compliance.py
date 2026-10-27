@@ -55,6 +55,19 @@ _CONNECTORS = {"bin", "binti", "binte", "ibn", "bn"}
 _LEET_MAP = str.maketrans({"@": "a", "$": "s", "0": "o", "1": "i", "3": "e",
                            "4": "a", "5": "s", "7": "t"})
 
+# Personal-name spellings that collapse to "mohammad". Equality reached ONLY
+# through one of these is "alias-only": a real screener would want a second
+# identifier (DOB / nationality) before blocking, and this demo collects none —
+# so alias-only matches are held for review, never auto-blocked. Corporate
+# suffix aliases (Co/Ltd/Inc) do not assert identity and stay block-eligible.
+_INDIVIDUAL_ALIASES = {"md", "mohd", "muhammad", "mohammed", "mohamed",
+                       "mahomed", "mahmad", "mohemmed"}
+
+
+def _uses_individual_alias(name: str) -> bool:
+    s = re.sub(r"[^a-z0-9\s]", " ", str(name).casefold().translate(_LEET_MAP))
+    return any(tok in _INDIVIDUAL_ALIASES for tok in s.split())
+
 
 def normalize_name(name: str) -> str:
     """Canonical form (order-insensitive): see normalize_parts."""
@@ -180,6 +193,7 @@ def screen_party(name: str, role: str, entries: list[dict] | None = None) -> dic
     exact = best["entry"] is not None and canonical_query == best["norm"] and canonical_query != ""
     single_token = len(query_tokens) < 2
     unscreenable = canonical_query == ""
+    alias_only = exact and _uses_individual_alias(name)
 
     if unscreenable:
         # Fail-safe: a name that normalizes to nothing (symbols, emoji, garbage)
@@ -187,6 +201,14 @@ def screen_party(name: str, role: str, entries: list[dict] | None = None) -> dic
         # bypass — it goes to a human instead.
         status = "FUZZY_MATCH_REVIEW"
         why = "unscreenable: name normalizes to empty — cannot match, defaulting to human review"
+    elif alias_only:
+        # Alias-only equality (e.g. "Md Salim" -> "mohammad salim") is NOT the
+        # listed name. Without a second identifier (DOB / nationality) to
+        # corroborate, blocking on an alias is how innocent names get frozen —
+        # downgrade to human review.
+        status = "FUZZY_MATCH_REVIEW"
+        why = ("alias-only equality via personal-name alias map — block requires the exact "
+               "listed name or a second identifier (DOB/nationality), which this demo does not collect")
     elif exact:
         status = "BLOCKED"
         why = "canonical full-name equality after normalization"

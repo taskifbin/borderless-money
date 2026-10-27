@@ -8,7 +8,7 @@ BACKEND = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND))
 
 from app.agent import orchestrator  # noqa: E402
-from app.services import routing_scorer  # noqa: E402
+from app.services import compliance, routing_scorer  # noqa: E402
 from app.services.horizon import probe  # noqa: E402
 
 
@@ -79,6 +79,25 @@ class TestEVRanking(unittest.TestCase):
         routes = routing_scorer.score_routes(1000, "BKASH")
         hop = next(r for r in routes if "Multi-hop" in r["rail"])
         self.assertEqual(hop["breakdown"]["hops"], ["AED", "USD", "BDT"])
+
+
+class TestScreeningPolicy(unittest.TestCase):
+    """Phase 3 policy: alias-only equality is HELD, never auto-blocked, because
+    the demo collects no second identifier (DOB / nationality) to corroborate."""
+
+    def test_alias_only_equality_downgrades_to_review(self):
+        for name in ("Md Salim", "Mohammed Salim", "Muhammad Salim", "MD. SALIM"):
+            party = compliance.screen_party(name, "test")
+            self.assertEqual(party["status"], "FUZZY_MATCH_REVIEW", name)
+            self.assertIn("alias-only", party["rationale"]["decision_rule"])
+
+    def test_true_exact_and_corporate_aliases_still_block(self):
+        self.assertEqual(compliance.screen_party("Mohammad Salim", "test")["status"], "BLOCKED")
+        self.assertEqual(compliance.screen_party("Rashid Trading Co.", "test")["status"], "BLOCKED")
+
+    def test_unscreenable_and_leet(self):
+        self.assertEqual(compliance.screen_party("###", "test")["status"], "FUZZY_MATCH_REVIEW")
+        self.assertEqual(compliance.screen_party("F@rh@n Ahmed", "test")["status"], "BLOCKED")
 
 
 class TestDataSources(unittest.TestCase):

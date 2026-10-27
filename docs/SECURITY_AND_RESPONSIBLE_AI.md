@@ -70,7 +70,7 @@ parties against the sample sanctions list as if it were authoritative.
   measurable false-negative risk for transliteration variants beyond its
   normalization; thresholds are configurable but unvalidated against real-world
   name diversity. Precision/recall numbers in `GET /metrics` come from the
-  in-repo benchmark (14 true hits, 14 near-variants, 21 clear names) — small,
+  in-repo benchmark (11 true hits, 4 alias-only, 15 near-variants, 5 single-token, 2 unscreenable, 21 clear names) — small,
   curated, and labeled as such.
 - *Explanations:* template-grounded with a number guard (LLM paraphrases are
   rejected if they introduce numbers); Bengali templates are simpler than
