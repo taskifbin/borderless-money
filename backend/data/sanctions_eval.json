@@ -1,5 +1,5 @@
 {
-  "description": "Sanctions-matcher benchmark v2: realistic variants, not just misspellings. Categories: exact_normalized (canonical full-name equality after alias/punctuation/order normalization -> BLOCKED), near_variant (added/variant tokens, transliteration -> REVIEW), single_token (single-name queries -> never BLOCK, REVIEW when a listed token matches closely), clear (unrelated names -> CLEAR). Metrics reported: precision/recall/FPR/FNR per category by backend/evals/eval_sanctions.py.",
+  "description": "Sanctions-matcher benchmark v3: realistic variants, obfuscation, unscreenable input. Categories: exact_normalized (canonical full-name equality after alias/punctuation/order/leet normalization -> BLOCKED), near_variant (added/variant tokens, transliteration, lossy leet -> REVIEW), single_token (single-name queries -> never BLOCK, REVIEW when a listed token matches closely), unscreenable (normalizes to empty -> REVIEW, never CLEAR), clear (unrelated names -> CLEAR). Metrics reported: precision/recall/FPR/FNR per category by backend/evals/eval_sanctions.py.",
   "cases": [
     {"name": "Mohammad Salim", "category": "exact_normalized"},
     {"name": "Mohammed Salim", "category": "exact_normalized"},
@@ -9,6 +9,7 @@
     {"name": "Salim Mohammad", "category": "exact_normalized"},
     {"name": "Farhan Ahmed", "category": "exact_normalized"},
     {"name": "farhan   ahmed!!", "category": "exact_normalized"},
+    {"name": "F@rh@n Ahmed", "category": "exact_normalized"},
     {"name": "Jahangir Alam", "category": "exact_normalized"},
     {"name": "Alam Jahangir", "category": "exact_normalized"},
     {"name": "Rashid Trading Co.", "category": "exact_normalized"},    {"name": "Selim Reza", "category": "exact_normalized"},
@@ -21,6 +22,7 @@
     {"name": "Jahangir Alam Chowdhury", "category": "near_variant"},
     {"name": "Nasir Uddin Chowdhury", "category": "near_variant"},
     {"name": "Farhan Ahmad", "category": "near_variant"},
+    {"name": "Farhan Ah3d", "category": "near_variant"},
     {"name": "Jahangir Alom", "category": "near_variant"},
     {"name": "Rashid Trading Company", "category": "exact_normalized"},
     {"name": "Global Smugling Network", "category": "near_variant"},
@@ -33,6 +35,8 @@
     {"name": "Farhan", "category": "single_token"},
     {"name": "Reza", "category": "single_token"},
     {"name": "Jahangir", "category": "single_token"},
+    {"name": "###", "category": "unscreenable"},
+    {"name": "***", "category": "unscreenable"},
     {"name": "Ayesha Begum", "category": "clear"},
     {"name": "Mohammed Rafiq", "category": "clear"},
     {"name": "Rahim Uddin", "category": "clear"},

@@ -49,6 +49,12 @@ _ALIAS = {
 }
 _CONNECTORS = {"bin", "binti", "binte", "ibn", "bn"}
 
+# Character-substitution obfuscation ("F@rh@n", "Ah3d") is a known screening
+# evasion; map the common leet glyphs onto letters BEFORE tokenization so both
+# sides normalize identically. Applied uniformly to queries AND list entries.
+_LEET_MAP = str.maketrans({"@": "a", "$": "s", "0": "o", "1": "i", "3": "e",
+                           "4": "a", "5": "s", "7": "t"})
+
 
 def normalize_name(name: str) -> str:
     """Canonical form (order-insensitive): see normalize_parts."""
@@ -57,11 +63,13 @@ def normalize_name(name: str) -> str:
 
 def normalize_parts(name: str) -> tuple[str, str]:
     """Returns (original_order, canonical_sorted). Both lowercase, punctuation
-    stripped, aliases mapped, connectors and single letters dropped. The
-    original order preserves the common case where the misspelling sits at the
-    END of the name (Jaro has no prefix bonus to hide it there); the canonical
-    sorted form makes token-order swaps compare equal."""
-    s = re.sub(r"[^a-z0-9\s]", " ", str(name).casefold())
+    stripped, leet glyphs mapped to letters, aliases mapped, connectors and
+    single letters dropped. The original order preserves the common case where
+    the misspelling sits at the END of the name (Jaro has no prefix bonus to
+    hide it there); the canonical sorted form makes token-order swaps compare
+    equal."""
+    s = str(name).casefold().translate(_LEET_MAP)
+    s = re.sub(r"[^a-z0-9\s]", " ", s)
     tokens = []
     for tok in s.split():
         if len(tok) == 1 or tok in _CONNECTORS:  # initials + bin/binti/s/o/d/o remnants
@@ -171,8 +179,15 @@ def screen_party(name: str, role: str, entries: list[dict] | None = None) -> dic
 
     exact = best["entry"] is not None and canonical_query == best["norm"] and canonical_query != ""
     single_token = len(query_tokens) < 2
+    unscreenable = canonical_query == ""
 
-    if exact:
+    if unscreenable:
+        # Fail-safe: a name that normalizes to nothing (symbols, emoji, garbage)
+        # cannot be screened. Defaulting it to CLEAR would be a silent
+        # bypass — it goes to a human instead.
+        status = "FUZZY_MATCH_REVIEW"
+        why = "unscreenable: name normalizes to empty — cannot match, defaulting to human review"
+    elif exact:
         status = "BLOCKED"
         why = "canonical full-name equality after normalization"
     elif best["entry"] is None:

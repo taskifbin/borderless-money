@@ -28,6 +28,7 @@ EXPECTED = {
     "exact_normalized": "BLOCKED",
     "near_variant": "FUZZY_MATCH_REVIEW",
     "single_token": "FUZZY_MATCH_REVIEW",
+    "unscreenable": "FUZZY_MATCH_REVIEW",
     "clear": "CLEAR",
 }
 
@@ -51,7 +52,7 @@ def main() -> int:
 
     print(f"{'category':<18} {'n':>3}  decisions")
     stats = {}
-    for category in ("exact_normalized", "near_variant", "single_token", "clear"):
+    for category in ("exact_normalized", "near_variant", "single_token", "unscreenable", "clear"):
         rows = results[category]
         counts = defaultdict(int)
         for _, status in rows:
@@ -83,6 +84,11 @@ def main() -> int:
     print(f"false-negative rate on true matches : {fnr:.1%}")
     print(f"block precision                     : {precision_block:.1%}")
     print(f"single-token hard-blocks            : {stats['single_token'].get('BLOCKED', 0)} (policy: 0)")
+    print(f"unscreenable inputs cleared          : {clear_count_unscreenable(stats)} (policy: 0 — must go to review)")
+
+
+def clear_count_unscreenable(stats: dict) -> int:
+    return stats["unscreenable"].get("CLEAR", 0)
 
     if mismatches:
         print("\nPOLICY MISMATCHES:")
