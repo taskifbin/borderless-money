@@ -22,15 +22,21 @@ class TestIncentiveEligibility(unittest.TestCase):
         self.assertEqual(teaser["breakdown"]["govt_incentive_added_bdt"], 0.0)
 
     def test_incentive_flag_flips_the_winner(self):
-        """Raw true-net would crown the teaser rail; incentive-aware expected
-        value keeps the eligible Stellar rail on top."""
+        """On raw pricing (best FX, lowest fee) the teaser rail beats every
+        eligible rail — the winner any incentive-blind rate table would crown.
+        The 2.5% gate, applied only to eligible rails, is what keeps the
+        Stellar rail on top."""
         teaser = next(r for r in self.routes if "Cash Pickup" in r["rail"])
-        best = self.routes[0]
+        stellar = next(r for r in self.routes if r["rail"] == "Stellar Hybrid Anchor")
+        stellar_net_ex_incentive = (stellar["breakdown"]["true_net_receive_bdt"]
+                                    - stellar["breakdown"]["govt_incentive_added_bdt"])
         self.assertGreater(teaser["breakdown"]["true_net_receive_bdt"],
-                           next(r for r in self.routes if r["rail"] == "Stellar Hybrid Anchor")
-                           ["breakdown"]["true_net_receive_bdt"],
-                           "test setup: teaser must win on raw net")
-        self.assertEqual(best["rail"], "Stellar Hybrid Anchor")
+                           stellar_net_ex_incentive,
+                           "test setup: teaser must win the incentive-blind comparison")
+        self.assertGreater(stellar["breakdown"]["true_net_receive_bdt"],
+                           teaser["breakdown"]["true_net_receive_bdt"],
+                           "incentive eligibility must flip the ranking")
+        self.assertEqual(self.routes[0]["rail"], "Stellar Hybrid Anchor")
 
     def test_baseline_is_naive_cheapest_fee_and_loses(self):
         baseline = routing_scorer.naive_baseline(self.routes)
