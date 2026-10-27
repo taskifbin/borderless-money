@@ -372,5 +372,30 @@ class TestIdempotencyStore(unittest.TestCase):
         self.assertEqual(store.get_idempotent_response(key)["transaction"]["transaction_id"], "tx-A")
 
 
+class TestCorridorConfigInvariants(unittest.TestCase):
+    """Hard invariants every corridor config must satisfy. A customer FX rate
+    above mid-market is not a legal quote (the provider would be paying the
+    customer to trade); the scorer must never see one."""
+
+    def test_every_rail_fx_is_at_or_below_mid_market(self):
+        for code in corridor_cfg.available_corridors():
+            cfg = corridor_cfg.load_corridor(code)
+            mid = D(cfg["mid_market_rate"])
+            for rail in cfg["rails"]:
+                self.assertLessEqual(
+                    D(rail["fx"]), mid,
+                    f"{code}/{rail['name']}: rail FX {rail['fx']} exceeds "
+                    f"mid-market {cfg['mid_market_rate']} — not a legal quote")
+                self.assertGreater(D(rail["fx"]), 0, f"{code}/{rail['name']}")
+
+    def test_every_rail_fee_and_success_rate_are_sane(self):
+        for code in corridor_cfg.available_corridors():
+            cfg = corridor_cfg.load_corridor(code)
+            for rail in cfg["rails"]:
+                self.assertGreaterEqual(D(rail["fee_source"]), 0, f"{code}/{rail['name']}")
+                self.assertTrue(0 < float(rail["success_rate"]) <= 1.0, f"{code}/{rail['name']}")
+                self.assertGreater(float(rail["hours"]), 0, f"{code}/{rail['name']}")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

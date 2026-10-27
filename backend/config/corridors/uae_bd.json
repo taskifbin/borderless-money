@@ -51,12 +51,12 @@
     },
     {
       "name": "Cash Pickup Agent (teaser rate)",
-      "fx": 33.6,
+      "fx": 33.1,
       "fee_source": 1.5,
       "hours": 1.0,
       "success_rate": 0.9,
       "incentive_eligible": false,
-      "note": "Sample teaser-rate rail: headline FX above mid-market but the channel does not qualify for the government incentive \u2014 demonstrates the eligibility flag changing the winner."
+      "note": "Sample promotional rail: aggressive near-mid-market FX (fastest, best headline FX of all rails) but the channel does not qualify for the government incentive \u2014 demonstrates the eligibility flag changing the winner."
     }
   ],
   "payout_methods": [
