@@ -5,12 +5,23 @@
 
 > **Agentic, jurisdiction-aware remittance intelligence that maximizes the money that actually arrives.**
 
-**Track:** Idea to Unicorn · **Domain:** FinSphere AI · **Challenge:** Borderless Money
-**Default corridor:** 🇦🇪 UAE (AED) → 🇧🇩 Bangladesh (BDT)
+| | |
+| :--- | :--- |
+| **Hackathon** | [International AI Builders Congress 2026](https://cloudcampbd.com/ai-builders-congress) |
+| **Track** | Idea to Unicorn |
+| **Domain** | FinSphere AI |
+| **Challenge** | Borderless Money — Cross-border payments and remittance intelligence |
+| **Default corridor** | 🇦🇪 UAE (AED) → 🇧🇩 Bangladesh (BDT) |
 
 ## 👥 Team — CTRL V
 
-**Sukonya Dutta Pushpa** (Captain) · Taskif Bin Parves · Wasik Ahmed · Fahim Ahmed · Alisha Akter
+| Member | GitHub |
+| :--- | :--- |
+| [**Sukonya Dutta Pushpa**](https://github.com/Dutta-Pushpa) — Captain | [@Dutta-Pushpa](https://github.com/Dutta-Pushpa) |
+| [Taskif Bin Parves](https://github.com/taskifbin) | [@taskifbin](https://github.com/taskifbin) |
+| [Wasik Ahmed](https://github.com/WasikAhmed00) | [@WasikAhmed00](https://github.com/WasikAhmed00) |
+| [Fahim Ahmed](https://github.com/Fahim1150) | [@Fahim1150](https://github.com/Fahim1150) |
+| [Alisha Akter](https://github.com/alisha-akter) | [@alisha-akter](https://github.com/alisha-akter) |
 
 ---
 
