@@ -21,7 +21,7 @@ DEFAULT_CORRIDOR = "uae_bd"
 def load_corridor(code: str = DEFAULT_CORRIDOR) -> dict:
     path = CORRIDOR_DIR / f"{code}.json"
     if not path.exists():
-        raise ValueError(f"Unknown corridor '{code}' (no config at {path})")
+        raise ValueError(f"Unknown corridor '{code}' (no config at backend/config/corridors/{code}.json)")
     with open(path, "r", encoding="utf-8") as f:
         cfg = json.load(f)
     required = ("code", "label", "source_currency", "dest_currency", "mid_market_rate",
