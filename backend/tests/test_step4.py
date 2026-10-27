@@ -59,6 +59,22 @@ class TestEVRanking(unittest.TestCase):
         with self.assertRaises(ValueError):
             routing_scorer.score_routes(1000, "BKASH", deadline_hours=0.5)
 
+    def test_deadline_from_utterance_filters_routes(self):
+        """'by tomorrow' parses to a 24h ceiling and the 28h SWIFT route is
+        filtered end-to-end — no deadline_hours parameter passed by hand."""
+        state = orchestrator.run(
+            "quote", text="Send 1,000 dirhams to my mother's bKash in Dhaka by tomorrow")
+        self.assertIsNone(state.get("error"))
+        self.assertEqual(state["parsed_intent"]["deadline_hours"], 24.0)
+        self.assertTrue(all(r["settlement_time_hrs"] <= 24 for r in state["routes"]))
+        self.assertNotIn("Traditional SWIFT", [r["rail"] for r in state["routes"]])
+
+    def test_urgent_utterance_filters_harder(self):
+        state = orchestrator.run(
+            "quote", text="Send 1,000 dirhams urgently to my mother's bKash in Dhaka")
+        self.assertEqual(state["parsed_intent"]["deadline_hours"], 3.0)
+        self.assertTrue(all(r["settlement_time_hrs"] <= 3 for r in state["routes"]))
+
     def test_multi_hop_present(self):
         routes = routing_scorer.score_routes(1000, "BKASH")
         hop = next(r for r in routes if "Multi-hop" in r["rail"])

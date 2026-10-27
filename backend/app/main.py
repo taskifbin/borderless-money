@@ -117,6 +117,7 @@ class QuoteRequest(BaseModel):
     amount: Optional[float] = Field(default=None, gt=0, description="Transfer principal in source currency; must be positive")
     payout_method: Optional[str] = None
     recipient_name: Optional[str] = None
+    deadline_hours: Optional[float] = Field(default=None, ge=0, description="Arrival ceiling in hours; routes slower than this are filtered out")
     demo_scenario: Literal["default", "fuzzy_review", "high_risk"] = "default"
 
 
@@ -192,7 +193,7 @@ def quote(req: QuoteRequest):
     return _run_or_raise(
         mode="quote", text=req.text, amount=req.amount,
         payout_method=req.payout_method, recipient_name=req.recipient_name,
-        demo_scenario=req.demo_scenario,
+        deadline_hours=req.deadline_hours, demo_scenario=req.demo_scenario,
     )
 
 

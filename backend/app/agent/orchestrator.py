@@ -113,8 +113,12 @@ def parse_intent_node(state: AgentState) -> dict:
             f"{payout or 'default payout'} to '{recipient or 'unnamed recipient'}' "
             f"(confidence {parsed['confidence']:.2f})"
         )
+        deadline = parsed.get("deadline_hours")
+        if deadline is not None:
+            log.append(f"Deadline voiced — only routes arriving within {deadline:g}h will be shown.")
         return {"parsed_intent": parsed, "amount": amount,
                 "payout_method": payout, "recipient_name": recipient,
+                "deadline_hours": deadline,
                 "llm_used": llm_used, "explanation_log": log}
     return {"parsed_intent": None, "llm_used": False, "explanation_log": log}
 
@@ -129,8 +133,12 @@ def score_routes_node(state: AgentState) -> dict:
     if state.get("payout_method") is None:
         log.append(f"No payout rail detected — defaulting to {payout}")
 
+    deadline = state.get("deadline_hours")
     routes = routing_scorer.score_routes(amount, payout,
-                                         corridor_code=state.get("corridor", corridor_cfg.DEFAULT_CORRIDOR))
+                                         corridor_code=state.get("corridor", corridor_cfg.DEFAULT_CORRIDOR),
+                                         deadline_hours=deadline)
+    if deadline is not None:
+        log.append(f"Deadline filter applied: {sum(1 for r in routes)} route(s) arrive within {deadline:g}h.")
     best = routes[0]
     priced = [r for r in routes if r["breakdown"]["true_net_receive_bdt"] is not None]
     worst = priced[-1] if priced else best

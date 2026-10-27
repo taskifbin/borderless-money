@@ -26,6 +26,7 @@ export interface QuoteParams {
   amount?: number;
   payout_method?: string;
   recipient_name?: string;
+  deadline_hours?: number;
   demo_scenario?: DemoScenario;
 }
 

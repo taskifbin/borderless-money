@@ -49,6 +49,39 @@ _RELATIONS = {
     "أمي": "Mother", "والدتي": "Mother", "والدة": "Mother", "والدي": "Father", "أبي": "Father",
 }
 
+# Deadline phrases -> hours. These mappings are DEMO ASSUMPTIONS (no public
+# standard exists for what "tonight" means operationally); they are documented
+# here so the behavior is inspectable. Explicit "within N hours/days" always
+# wins over the keyword mappings.
+_URGENT_DEADLINE = {"urgent", "urgently", "asap", "immediately", "right now",
+                    "jati", "এখুনি", "এখনই", "فورا", "حالا"}
+_TODAY_DEADLINE = {"today", "tonight", "this evening", "ajke", "aj",
+                   "আজকে", "আজ", "আজকের", "اليوم", "الليلة"}
+_TOMORROW_DEADLINE = {"tomorrow", "tomarrow", "kal", "kalex", "আগামীকাল",
+                      "কাল", "আগামী", "غدا", "غداً", "بكرة"}
+
+
+def _extract_deadline_hours(text: str) -> float | None:
+    """Deadline as arrival-hours ceiling, or None when no deadline is voiced."""
+    normalized = text.translate(_BN_DIGITS).translate(_AR_DIGITS).lower()
+    m = re.search(r"within\s+(\d+(?:\.\d+)?)\s*(hours?|hrs?|days?|din|দিন)", normalized)
+    if m:
+        value = float(m.group(1))
+        unit = m.group(2)
+        return value * 24.0 if unit.startswith(("day", "din", "দিন")) else value
+    for words, hours in (
+        (_URGENT_DEADLINE, 3.0),
+        (_TOMORROW_DEADLINE, 24.0),
+        (_TODAY_DEADLINE, 12.0),
+    ):
+        for w in words:
+            if w.isascii():
+                if re.search(rf"(^|\W){re.escape(w)}(\W|$)", normalized):
+                    return hours
+            elif w in normalized:
+                return hours
+    return None
+
 
 def _detect_language(text: str) -> str:
     if re.search(r"[\u0980-\u09FF]", text):
@@ -132,6 +165,7 @@ def parse_intent(text: str, default_corridor: str = "AED_TO_BDT") -> dict:
     payout = _extract_payout(text)
     recipient = _extract_recipient(text)
     language = _detect_language(text)
+    deadline_hours = _extract_deadline_hours(text)
 
     defaults_applied = []
     if currency is None:
@@ -147,6 +181,8 @@ def parse_intent(text: str, default_corridor: str = "AED_TO_BDT") -> dict:
         confidence += 0.05
     if recipient:
         confidence += 0.05
+    if deadline_hours is not None:
+        confidence += 0.05
 
     return {
         "raw_text": text,
@@ -155,6 +191,7 @@ def parse_intent(text: str, default_corridor: str = "AED_TO_BDT") -> dict:
         "dest_currency": "BDT",
         "recipient": recipient,
         "payout_method": payout,
+        "deadline_hours": deadline_hours,
         "corridor": default_corridor,
         "language_detected": language,
         "confidence": round(confidence, 2),
