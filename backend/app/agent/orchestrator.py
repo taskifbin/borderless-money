@@ -45,6 +45,7 @@ class AgentState(TypedDict, total=False):
     quote_expires_at: str | None
     quote_binding: str | None  # "bound" | "fresh_unbound_demo" | None
     settlement_outcome: str    # "COMPLETED" (default) or injected "TIMEOUT"/"FAILED" for the demo
+    deadline_hours: float | None  # arrival ceiling (h): API param or parsed from the utterance
     routes: list
     selected_route: dict | None
     risk: dict | None
@@ -113,7 +114,7 @@ def parse_intent_node(state: AgentState) -> dict:
             f"{payout or 'default payout'} to '{recipient or 'unnamed recipient'}' "
             f"(confidence {parsed['confidence']:.2f})"
         )
-        deadline = parsed.get("deadline_hours")
+        deadline = state.get("deadline_hours") or parsed.get("deadline_hours")
         if deadline is not None:
             log.append(f"Deadline voiced — only routes arriving within {deadline:g}h will be shown.")
         return {"parsed_intent": parsed, "amount": amount,
@@ -472,19 +473,24 @@ def run(mode: str, *, text: str | None = None, amount: float | None = None,
         recipient_name: str | None = None, demo_scenario: str = "default",
         corridor: str = corridor_cfg.DEFAULT_CORRIDOR,
         bound_quote_id: str | None = None, confirmed: bool | None = None,
-        settlement_outcome: str = "COMPLETED") -> AgentState:
+        settlement_outcome: str = "COMPLETED",
+        deadline_hours: float | None = None) -> AgentState:
     """Run the full agent. mode: 'quote' (no money moves) or 'execute'.
 
     Execution safety: pass `bound_quote_id` (the quote_id from a previous
     quote response) with `confirmed=True` to bind execution to the exact
     quote the user saw — expired/mismatched/unconfirmed quotes are refused.
-    Without it the unbound demo path runs (fresh numbers, labeled as such)."""
+    Without it the unbound demo path runs (fresh numbers, labeled as such).
+    `deadline_hours` caps arrival time; the parser may also set it from the
+    utterance (an explicit API value wins — parse_intent_node keeps the
+    caller's value via `or`)."""
     state: AgentState = {
         "mode": mode, "corridor": corridor, "text": text, "amount": amount,
         "payout_method": payout_method, "recipient_name": recipient_name,
         "selected_route_name": selected_route_name, "demo_scenario": demo_scenario,
         "bound_quote_id": bound_quote_id, "confirmed": confirmed,
         "settlement_outcome": settlement_outcome,
+        "deadline_hours": deadline_hours,
         "explanation_log": [], "decision": "PENDING", "error": None,
         "parsed_intent": None, "routes": [], "selected_route": None,
         "risk": None, "compliance": None, "execution": None, "transaction": None,

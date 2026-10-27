@@ -293,7 +293,7 @@ Full request/response JSON: [docs/api-contracts.md](docs/api-contracts.md)
 | :--- | ---: | :--- |
 | Net-receive uplift vs SWIFT | **+3.05%** | corridor math, AED 1,000 (৳33,423.20 best route incl. xPay's AED 2 fee vs ৳32,432.40 legacy SWIFT) |
 | Intent accuracy (en/bn/ar) | **100%** | 49-utterance curated benchmark (`data/intent_eval.json`) |
-| p95 quote latency (engine) | **~2–3 ms** | 20 timed in-process quote runs — live value at `GET /metrics` |
+| p95 quote latency | **~2–3 ms engine / 21.2 ms end-to-end HTTP** | engine: `GET /metrics` · end-to-end: `reports/load_test.txt` (300 POST /api/agent/quote, loopback) |
 | Compliance false-positive hold rate | **0.0%** | 21 labeled clear names (`data/sanctions_eval.json`) |
 | OFAC screening recall | **100%** | 11 labeled true positives (exact/leet after normalization; alias-only matches are held for review, not blocked) (`data/sanctions_eval.json`) |
 

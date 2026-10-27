@@ -1,0 +1,13 @@
+requests=300 statuses={200: 300}
+end-to-end HTTP POST /api/agent/quote vs localhost uvicorn:
+  p50=14.2ms p95=21.2ms p99=39.9ms mean=21.1ms max=1788.1ms
+
+context:
+- measured 2026-10-27, single client, same host as the server (loopback):
+  this is an end-to-end LATENCY measurement, not a capacity benchmark.
+- first attempt at the default 240/min limit hit HTTP 429 at request ~241 —
+  the per-IP rate limiter works; this run used XPAY_RATE_LIMIT=600/minute.
+- the first request includes lazy model loading (max=1788ms); p95/p99 exclude
+  that cold-start effect because 300 requests amortize it.
+- compare: in-process engine-only p95 (~2-3ms, GET /metrics) vs 21.2ms full
+  HTTP — the difference is FastAPI/serialization/socket overhead.

@@ -6,7 +6,7 @@ Every number below is **computed from this repository** — corridor math, eval 
 | :--- | ---: | :--- | :--- |
 | `net_receive_uplift_pct` | **3.05%** | ≥ 3.0% | AED 1,000 → BKASH: best-route True Net Receive **incl. xPay's AED 2 platform fee** (৳33,423.20) vs the legacy counterfactual — same SWIFT rail WITHOUT the platform fee (৳32,432.40) = ৳990.80 / 32,432.40 |
 | `intent_accuracy_pct` | **100.0%** | ≥ 95% | Full-field match (amount, currency, payout, recipient, language) on **49 curated utterances** in en/bn/ar — `backend/data/intent_eval.json`. Parser fixed during measurement: longest-match-first relation extraction, Arabic "بنك", Bengali relation inflections |
-| `p95_quote_latency_ms` | **live at `GET /metrics`** | ≤ 3,000 ms | p95 of 20 in-process end-to-end quote runs — **engine time only** (excludes network + model load); machine-dependent, so the README quotes the endpoint rather than a hard-coded number |
+| `p95_quote_latency_ms` | **~2–3 ms engine; 21.2 ms end-to-end HTTP** | ≤ 3,000 ms | engine: 20 in-process quote runs (`GET /metrics`); end-to-end: 300-request loopback load test (`scripts/load_test_p95.py` → `reports/load_test.txt`) |
 | `false_positive_hold_rate_pct` | **0.0%** | ≤ 2.0% | 21 known-clear names screened against the sample SDN list — none flagged (`data/sanctions_eval.json`) |
 | `ofac_recall_pct` | **100.0%** | 100% | 11 exact/leet true hits BLOCKED + 4 alias-only, 15 near-variants, 5 single-token, 2 unscreenable all REVIEWED on the 58-case benchmark (`make eval-sanctions`) |
 
