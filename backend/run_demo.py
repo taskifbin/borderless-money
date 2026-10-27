@@ -27,7 +27,7 @@ def print_routes(routes):
     for r in routes:
         b = r["breakdown"]
         star = " ✅ BEST" if r["is_best"] else ""
-        print(f"{r['name'][:33]:<34}{r['fx_rate']:>6.2f}{r['fee_aed']:>9.2f}"
+        print(f"{r['name'][:33]:<34}{r['fx_rate']:>6.2f}{r['fee_total_source']:>9.2f}"
               f"{b['govt_incentive_added_bdt']:>12.2f}{b['true_net_receive_bdt']:>14.2f}{star}")
     print(LINE)
 

@@ -101,8 +101,8 @@ No money moves.
       "payout_method": "BKASH",
       "fx_rate": 32.8,
       "mid_market_rate": 33.15,
-      "spread_bdt_per_aed": 0.35,
-      "fee_aed": 4.0,
+      "spread_per_source_unit": 0.35,
+      "fee_total_source": 6.0,
       "settlement_time_hrs": 2.0,
       "success_rate": 0.98,
       "is_best": true,
@@ -166,7 +166,7 @@ No money moves.
 ```
 
 A route with missing fee data returns `eligibility.eligible: false, reason:
-"missing_fee_data"`, `fee_aed/expected_value_bdt/breakdown.true_net_receive_bdt`
+"missing_fee_data"`, `fee_total_source/expected_value_bdt/breakdown.true_net_receive_bdt`
 all `null` (never silently zero), is ranked last and can never be `is_best`.
 
 **Quote artifact (quote + execute responses):**

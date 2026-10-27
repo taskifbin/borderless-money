@@ -38,8 +38,8 @@ export interface RouteOption {
   payout_method: string;
   fx_rate: number;
   mid_market_rate: number;
-  spread_bdt_per_aed: number;
-  fee_aed: number | null;
+  spread_per_source_unit: number;
+  fee_total_source: number | null;
   platform_fee_source?: number | null;
   fee_source_components?: {
     rail_fee_source: number | null;

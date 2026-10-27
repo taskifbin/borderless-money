@@ -53,7 +53,7 @@ true_net_dest    = gross_dest − fees_dest + incentive_dest
   principal; a sender paying "AED 4 fee" pays exactly AED 4 total.
 - **Anti-double-counting:** the corridor `fx` per rail is the **all-in customer
   rate**. Any provider spread is understood to be embedded in it and is never
-  added again as a separate fee. `spread_bdt_per_aed` (mid − rail rate) is
+  added again as a separate fee. `spread_per_source_unit` (mid − rail rate) is
   displayed for transparency only and never re-applied.
 
 ## 4. Missing data — flagged, never zeroed

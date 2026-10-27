@@ -76,8 +76,8 @@ def score_routes(amount_source, payout_method: str = "BKASH",
             "payout_method": payout_method,
             "fx_rate": to_number(D(rail["fx"])),
             "mid_market_rate": mid,
-            "spread_bdt_per_aed": to_number(quantize(D(mid) - D(rail["fx"]), dest_ccy)),
-            "fee_aed": to_number(D(fee_total) + platform_fee) if fee_total is not None else None,
+            "spread_per_source_unit": to_number(quantize(D(mid) - D(rail["fx"]), dest_ccy)),
+            "fee_total_source": to_number(D(fee_total) + platform_fee) if fee_total is not None else None,
             "platform_fee_source": to_number(platform_fee),
             "fee_source_components": {
                 "rail_fee_source": to_number(D(rail_fee)) if rail_fee is not None else None,
@@ -136,7 +136,7 @@ def score_routes(amount_source, payout_method: str = "BKASH",
 def naive_baseline(routes: list[dict]) -> dict | None:
     """The route a fee-only comparison would pick — the baseline the expected-
     value ranking is measured against. Routes with unknown fees cannot play."""
-    priced = [r for r in routes if r["fee_aed"] is not None and r["expected_value_bdt"] is not None]
+    priced = [r for r in routes if r["fee_total_source"] is not None and r["expected_value_bdt"] is not None]
     if not priced:
         return None
-    return min(priced, key=lambda r: (r["fee_aed"], -r["expected_value_bdt"]))
+    return min(priced, key=lambda r: (r["fee_total_source"], -r["expected_value_bdt"]))

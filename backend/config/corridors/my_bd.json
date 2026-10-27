@@ -1,0 +1,90 @@
+{
+  "code": "my_bd",
+  "label": "MYR_TO_BDT",
+  "source_currency": "MYR",
+  "dest_currency": "BDT",
+  "source_country": "MY",
+  "dest_country": "BD",
+  "geo_code": "MY->BD",
+  "mid_market_rate": 27.5,
+  "fx_source": "Fixture stub — # SOURCE NEEDED: Bangladesh Bank reference rate or citable MYR->BDT mid-market source",
+  "sourced_at": null,
+  "platform_fee_source": 2.0,
+  "platform_fee_note": "xPay flat sender fee charged in source currency, MYR 2.00 (assumption; docs/unit-economics.md); # SOURCE NEEDED: confirmed fee schedule",
+  "_sources": {
+    "note": "Third corridor added to prove config-only extensibility (no code change). Every economic field is a FIXTURE STUB: UNVERIFIED, not for public quoting. Replace via the data/sources.md workflow.",
+    "mid_market_rate": {"status": "UNVERIFIED", "as_of": null, "source_needed": "citable MYR->BDT mid-market source; expected shape: {rate, quoted_at, url}"},
+    "rails[].fx": {"status": "UNVERIFIED", "as_of": null, "source_needed": "World Bank Remittance Prices Worldwide (Malaysia->BD) + provider pages"},
+    "rails[].fee_source": {"status": "UNVERIFIED", "as_of": null, "source_needed": "published fee schedules of named MY providers"},
+    "rails[].hours": {"status": "UNVERIFIED", "as_of": null, "source_needed": "provider service-level statements"},
+    "rails[].success_rate": {"status": "UNVERIFIED", "as_of": null, "source_needed": "internal assumption — label as such"},
+    "last_mile[payout][rail]": {"status": "UNVERIFIED", "as_of": null, "source_needed": "bKash/Nagad/bank payout fee schedules"},
+    "govt_incentive_rate": {"status": "POLICY-CITED", "as_of": null, "source_needed": "Bangladesh Bank SME & Remittance Department circulars — same 2.5% applies from any corridor"},
+    "platform_fee_source": {"status": "PRODUCT-DECISION", "as_of": null, "source_needed": "confirmed commercial fee schedule"}
+  },
+  "govt_incentive_rate": 0.025,
+  "govt_incentive_note": "Same Bangladesh Bank incentive applies to formal remittance from any corridor",
+  "rails": [
+    {
+      "name": "Traditional SWIFT",
+      "fx": 27.0,
+      "fee_source": 15.0,
+      "hours": 24.0,
+      "success_rate": 0.97,
+      "incentive_eligible": true
+    },
+    {
+      "name": "Stellar Hybrid Anchor",
+      "fx": 27.2,
+      "fee_source": 3.0,
+      "hours": 2.0,
+      "success_rate": 0.98,
+      "incentive_eligible": true
+    },
+    {
+      "name": "Exchange House MTO",
+      "fx": 26.9,
+      "fee_source": 10.5,
+      "hours": 6.0,
+      "success_rate": 0.95,
+      "incentive_eligible": true
+    }
+  ],
+  "payout_methods": ["BKASH", "NAGAD", "BANK"],
+  "default_payout": "BKASH",
+  "quote_ttl_minutes": 60,
+  "last_mile": {
+    "BKASH": {
+      "Traditional SWIFT": [9.0, 4.0, 1.0],
+      "Stellar Hybrid Anchor": [1.0, 0.0, 1.0],
+      "Exchange House MTO": [1.5, 0.0, 1.0]
+    },
+    "NAGAD": {
+      "Traditional SWIFT": [9.0, 4.0, 1.0],
+      "Stellar Hybrid Anchor": [1.2, 0.0, 1.0],
+      "Exchange House MTO": [1.5, 0.0, 1.0]
+    },
+    "BANK": {
+      "Traditional SWIFT": [5.0, 0.0, 1.0],
+      "Stellar Hybrid Anchor": [2.0, 1.0, 1.0],
+      "Exchange House MTO": [4.0, 2.0, 1.0]
+    }
+  },
+  "default_amount": 1000.0,
+  "default_recipient": "Ayesha Begum",
+  "sanctions_list": "ofac_sample.json",
+  "demo_sender": {
+    "id": "usr_mys_001",
+    "name": "Mohammed Rafiq",
+    "device_fingerprint": "fp_my_11c4",
+    "account_age_days": 210,
+    "avg_send_myr": 900.0
+  },
+  "demo_recipients": {
+    "Ayesha Begum": {
+      "id": "rcp_001",
+      "relationship": "Mother",
+      "handle": "01712-345678 (bKash)"
+    }
+  }
+}

@@ -406,7 +406,7 @@ class TestPlatformFee(unittest.TestCase):
         comp = stellar["fee_source_components"]
         self.assertEqual(comp["platform_fee_source"], 2.0)
         self.assertEqual(comp["rail_fee_source"] + comp["last_mile_fee_source"]
-                         + comp["platform_fee_source"], stellar["fee_aed"])
+                         + comp["platform_fee_source"], stellar["fee_total_source"])
         self.assertEqual(stellar["breakdown"]["platform_fee_source"], 2.0)
         self.assertEqual(stellar["breakdown"]["true_net_receive_bdt"], 33423.20)
 
@@ -434,6 +434,30 @@ class TestCorridorConfigInvariants(unittest.TestCase):
                 self.assertGreaterEqual(D(rail["fee_source"]), 0, f"{code}/{rail['name']}")
                 self.assertTrue(0 < float(rail["success_rate"]) <= 1.0, f"{code}/{rail['name']}")
                 self.assertGreater(float(rail["hours"]), 0, f"{code}/{rail['name']}")
+
+    def test_third_corridor_loads_from_config_alone(self):
+        """my_bd.json (Malaysia -> BD) was added with NO code change: if it is
+        present in config/corridors/ the loader, health endpoint, scorer and
+        invariant tests must handle it — corridors really are just data."""
+        self.assertIn("my_bd", corridor_cfg.available_corridors())
+        cfg = corridor_cfg.load_corridor("my_bd")
+        self.assertEqual(cfg["source_currency"], "MYR")
+        self.assertEqual(cfg["dest_currency"], "BDT")
+        routes = routing_scorer.score_routes(500, "BKASH", corridor_code="my_bd")
+        self.assertTrue(routes)
+        best = routes[0]
+        self.assertTrue(best["is_best"])
+        self.assertEqual(best["breakdown"]["currency_source"], "MYR")
+        self.assertEqual(best["platform_fee_source"], 2.0)
+
+    def test_route_field_names_are_corridor_agnostic(self):
+        """Phase 1.9: the API must not hardcode AED/BDT in field names."""
+        routes = routing_scorer.score_routes(1000, "BKASH")
+        for r in routes:
+            self.assertIn("fee_total_source", r)
+            self.assertIn("spread_per_source_unit", r)
+            self.assertNotIn("fee_aed", r)
+            self.assertNotIn("spread_bdt_per_aed", r)
 
 
 if __name__ == "__main__":

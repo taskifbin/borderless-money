@@ -24,7 +24,7 @@ rate, 2.5% Bangladesh Bank incentive on eligible rails, legacy counterfactual
 
 > **The headline +3.05% holds while the anchor spread stays at or below ~1.1%.
 > At a 1.5% anchor spread the uplift is +2.59% — below our 3% target.** The
-> engine makes the spread visible per route (`spread_bdt_per_aed`), so the
+> engine makes the spread visible per route (`spread_per_source_unit`), so the
 > number a judge sees in the demo is the number this table is built from.
 
 ## Why the fee/FX structure still holds in the pessimistic row
