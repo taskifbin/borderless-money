@@ -35,6 +35,7 @@ Full **bn UI toggle on all four screens** (persisted), Bangla voice input, and t
 | KPI | Value | Target |
 | :--- | ---: | :--- |
 | Net-receive uplift vs SWIFT | **+3.05%** | ≥ 3.0% |
+| Uplift at 1.5% anchor spread (pessimistic row) | **+2.59%** | headline is a scenario, not a constant — [docs/stellar-sensitivity.md](stellar-sensitivity.md) |
 | Intent accuracy (curated en/bn/ar benchmark) | **100%** | ≥ 95% |
 | p95 quote latency (engine) | **~2–3 ms** | ≤ 3 s |
 | Compliance false-positive hold rate | **0.0%** | ≤ 2.0% |
