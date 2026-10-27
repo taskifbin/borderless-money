@@ -11,6 +11,17 @@
   "sourced_at": "2026-10-24T00:00:00Z",
   "platform_fee_source": 2.0,
   "platform_fee_note": "xPay flat sender fee charged in source currency, SAR 2.00 ≈ AED 2.00 (assumption; docs/unit-economics.md); # SOURCE NEEDED: confirmed fee schedule",
+  "_sources": {
+    "note": "Field-level provenance. UNVERIFIED = current value is a fixture assumption, not sourced; do not present it as sourced on camera or in slides. See data/sources.md for the full table and the replacement workflow.",
+    "mid_market_rate": {"status": "UNVERIFIED", "as_of": null, "source_needed": "Bangladesh Bank reference rate or another citable SAR->BDT mid-market source; expected shape: {rate, quoted_at, url}"},
+    "rails[].fx": {"status": "UNVERIFIED", "as_of": null, "source_needed": "World Bank Remittance Prices Worldwide (KSA->BD) FX-spread section + published provider rate pages; expected shape: {provider, fx_quoted, spread_pct, quoted_at, url}"},
+    "rails[].fee_source": {"status": "UNVERIFIED", "as_of": null, "source_needed": "Published fee schedules of named KSA providers (bank SWIFT tariff, exchange-house rate table, wallet payout pricing); expected shape: {provider, fee, fee_basis, url}"},
+    "rails[].hours": {"status": "UNVERIFIED", "as_of": null, "source_needed": "Provider service-level statements; expected shape: {provider, hours, url}"},
+    "rails[].success_rate": {"status": "UNVERIFIED", "as_of": null, "source_needed": "No public per-rail success-rate data exists; keep labeled as an internal assumption in all materials"},
+    "last_mile[payout][rail]": {"status": "UNVERIFIED", "as_of": null, "source_needed": "bKash/Nagad/bank payout fee schedules (published partner or MFS pricing pages); expected shape: {payout, fee, url}"},
+    "govt_incentive_rate": {"status": "POLICY-CITED", "as_of": null, "source_needed": "Bangladesh Bank SME & Remittance Department circulars — # SOURCE NEEDED: exact circular number + URL before quoting on camera"},
+    "platform_fee_source": {"status": "PRODUCT-DECISION", "as_of": null, "source_needed": "Confirmed commercial fee schedule (docs/unit-economics.md)"}
+  },
   "govt_incentive_rate": 0.025,
   "govt_incentive_note": "Same Bangladesh Bank incentive applies to formal remittance from any corridor",
   "rails": [
