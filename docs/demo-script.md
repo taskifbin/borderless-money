@@ -26,7 +26,7 @@ Open with a stat, not a logo.
 
 *(Screen: quote screen. Point at: They receive ৳33,423.20 · Includes ৳820.00 government bonus. One line only:)*
 
-> "No other app optimizes for net receive — because computing the 2.5% incentive into the route choice is the whole product."
+> "We checked the apps our families use — none of them computed the 2.5% incentive into the route choice. That is the whole product. *(The claim is scoped: 'the only one we found' — backed by docs/competitive-scan.md when it exists; see TODO there.)*"
 
 ## 1:00–2:00 · Demo / flow
 
