@@ -1,26 +1,49 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import MicButton from "@/components/MicButton";
-import FlowDiagram from "@/components/FlowDiagram";
 import ChainTrail from "@/components/ChainTrail";
 import { executeTransfer, fmtAED, fmtBDT, getQuote } from "@/lib/api";
 import { STRINGS, type Lang } from "@/lib/i18n";
-import type { AgentStateResponse, DemoScenario } from "@/lib/types";
+import type { AgentStateResponse, DemoScenario, RouteOption } from "@/lib/types";
 
 type Screen = "send" | "quote" | "review" | "receipt";
-
-const SCENARIO_LINKS: Array<{ param: string; label: string }> = [
+const PAYOUT_OPTIONS = [
+  { value: "BKASH", label: "bKash", detail: "Mobile wallet" },
+  { value: "NAGAD", label: "Nagad", detail: "Mobile wallet" },
+  { value: "UPAY", label: "Upay", detail: "Mobile wallet" },
+  { value: "DEBIT_CARD", label: "Debit card", detail: "Visa / Mastercard" },
+  { value: "CREDIT_CARD", label: "Credit card", detail: "Visa / Mastercard" },
+  { value: "VISA_CARD", label: "Visa card", detail: "Card payout" },
+];
+const SCENARIO_LINKS = [
   { param: "default", label: "default" },
   { param: "fuzzy_review", label: "review" },
   { param: "high_risk", label: "high risk" },
 ];
+
+function Icon({ name, size = 18 }: { name: "arrow" | "check" | "shield" | "spark" | "clock" | "globe" | "chevron"; size?: number }) {
+  const common = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  const paths = { arrow: <><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></>, check: <path d="m5 12 4 4L19 6"/>, shield: <><path d="M12 3 20 7v5c0 4.7-3.2 7.6-8 9-4.8-1.4-8-4.3-8-9V7l8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></>, spark: <><path d="m12 3 1.6 6.4L20 11l-6.4 1.6L12 19l-1.6-6.4L4 11l6.4-1.6L12 3Z"/></>, clock: <><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></>, globe: <><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.3 2.4 3.3 5.3 3.3 8.5S14.3 18.1 12 20.5c-2.3-2.4-3.3-5.3-3.3-8.5S9.7 5.9 12 3.5Z"/></>, chevron: <path d="m9 6 6 6-6 6"/> };
+  return <svg {...common} aria-hidden="true">{paths[name]}</svg>;
+}
+
+function Brand() {
+  return <div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-2xl bg-[var(--saffron)] text-[var(--navy)]"><span className="text-lg font-black">↗</span></div><div><p className="text-[15px] font-extrabold tracking-tight text-white">Xpay</p><p className="-mt-1 text-[15px] font-extrabold tracking-tight text-[var(--saffron)]">money.</p></div></div>;
+}
+
+function Shell({ children, active = "send" }: { children: React.ReactNode; active?: string }) {
+  return <div className="bm-shell flex min-h-screen flex-col lg:flex-row"><aside className="flex w-full flex-col bg-[var(--navy)] px-5 py-5 text-white lg:min-h-screen lg:w-[244px] lg:px-7 lg:py-8"><Brand /><div className="mt-8 hidden flex-1 lg:block"><p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[.2em] text-slate-500">Workspace</p><nav className="space-y-1"><NavItem icon="↗" label="Send money" active={active === "send"} href="/" /><NavItem icon="◈" label="ROI calculator" active={active === "roi"} href="/roi" /></nav></div><div className="mt-auto hidden rounded-2xl border border-white/10 bg-white/[.04] p-4 lg:block"><div className="mb-3 flex items-center gap-2 text-xs text-slate-300"><span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_#34d399]" /> All systems operational</div><p className="text-[11px] leading-relaxed text-slate-500">Quotes are bound to exact routes and screened before execution.</p></div><div className="mt-6 hidden text-[11px] text-slate-500 lg:block">© 2026 Borderless Money</div></aside><main className="min-w-0 flex-1">{children}</main></div>;
+}
+function NavItem({ icon, label, active, href }: { icon: string; label: string; active?: boolean; href: string }) { return <a href={href} className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition ${active ? "bg-white/10 text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}><span className={active ? "text-[var(--saffron)]" : "text-slate-500"}>{icon}</span>{label}</a>; }
+function Topbar({ lang, onLang, eyebrow = "UAE → Bangladesh" }: { lang: Lang; onLang: (l: Lang) => void; eyebrow?: string }) { return <header className="flex items-center justify-between px-5 py-5 sm:px-8 lg:px-12"><div className="flex items-center gap-2 text-xs font-semibold text-[var(--ink-soft)]"><span className="grid h-7 w-7 place-items-center rounded-full bg-white text-sm shadow-sm">◎</span>{eyebrow}<span className="hidden text-slate-300 sm:inline">·</span><span className="hidden font-normal text-slate-400 sm:inline">Live corridor</span></div><div className="flex items-center gap-3"><a href="/roi" className="hidden text-xs font-semibold text-[var(--ink-soft)] hover:text-[var(--ink)] sm:block">For operators →</a><LangToggle lang={lang} onLang={onLang} /></div></header>; }
+function LangToggle({ lang, onLang }: { lang: Lang; onLang: (l: Lang) => void }) { return <div className="flex rounded-full border border-[var(--line)] bg-white p-1 text-[11px] font-bold"><button type="button" onClick={() => onLang("en")} className={`rounded-full px-2.5 py-1 ${lang === "en" ? "bg-[var(--navy)] text-white" : "text-slate-400"}`}>EN</button><button type="button" onClick={() => onLang("bn")} className={`rounded-full px-2.5 py-1 ${lang === "bn" ? "bg-[var(--navy)] text-white" : "text-slate-400"}`}>বাং</button></div>; }
 
 export default function Home() {
   const [screen, setScreen] = useState<Screen>("send");
   const [lang, setLang] = useState<Lang>("en");
   const [amount, setAmount] = useState("1,000");
   const [recipient, setRecipient] = useState("");
+  const [payoutMethod, setPayoutMethod] = useState("BKASH");
   const [transcript, setTranscript] = useState<string | null>(null);
   const [scenario, setScenario] = useState<DemoScenario>("default");
   const [quote, setQuote] = useState<AgentStateResponse | null>(null);
@@ -29,453 +52,24 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [llmOn, setLlmOn] = useState(false);
   const t = STRINGS[lang];
-
-  useEffect(() => {
-    const saved = window.localStorage.getItem("bm-lang");
-    if (saved === "bn" || saved === "en") setLang(saved);
-    const s = new URLSearchParams(window.location.search).get("scenario");
-    if (s === "fuzzy" || s === "fuzzy_review") setScenario("fuzzy_review");
-    else if (s === "high_risk") setScenario("high_risk");
-    // honesty label: surface whether the bounded-LLM assist is configured
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000"}/api/health`)
-      .then((r) => r.json())
-      .then((h) => setLlmOn(Boolean(h?.engines?.llm_fallback)))
-      .catch(() => setLlmOn(false));
-  }, []);
-
-  const switchLang = (l: Lang) => {
-    setLang(l);
-    window.localStorage.setItem("bm-lang", l);
-    document.documentElement.lang = l === "bn" ? "bn" : "en";
-  };
-
+  useEffect(() => { const saved = window.localStorage.getItem("bm-lang"); if (saved === "bn" || saved === "en") setLang(saved); const s = new URLSearchParams(window.location.search).get("scenario"); if (s === "fuzzy_review" || s === "fuzzy") setScenario("fuzzy_review"); else if (s === "high_risk") setScenario("high_risk"); fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/health`).then(r => r.json()).then(h => setLlmOn(Boolean(h?.engines?.llm_fallback))).catch(() => setLlmOn(false)); }, []);
+  const switchLang = (l: Lang) => { setLang(l); window.localStorage.setItem("bm-lang", l); document.documentElement.lang = l === "bn" ? "bn" : "en"; };
   const amountValue = Number(amount.replace(/,/g, ""));
-  const canSubmit = Number.isFinite(amountValue) && amountValue > 0 && !busy;
-
-  const onTranscript = (text: string) => {
-    setTranscript(text);
-    const m = text.replace(/,/g, "").match(/(\d+(?:\.\d+)?)/);
-    if (m) setAmount(m[1]);
-  };
-
-  const reset = () => {
-    setQuote(null);
-    setResult(null);
-    setTranscript(null);
-    setError(null);
-    setScreen("send");
-  };
-
-  const getBestRate = async () => {
-    setBusy(true);
-    setError(null);
-    setResult(null);
-    try {
-      const state = await getQuote({
-        amount: amountValue,
-        recipient_name: recipient.trim() || undefined,
-        demo_scenario: scenario,
-      });
-      if (!state.routes.length) throw new Error(t.noRoutes);
-      setQuote(state);
-      setScreen("quote");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t.rateError);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const send = async (routeName: string) => {
-    setBusy(true);
-    setError(null);
-    try {
-      // Choosing a route on the quote screen IS the explicit confirmation:
-      // execution is bound to that exact quote (stale/mismatched → refused).
-      const state = await executeTransfer({
-        amount: amountValue,
-        recipient_name: recipient.trim() || undefined,
-        selected_route_name: routeName,
-        demo_scenario: scenario,
-        quote_id: quote?.quote_id ?? undefined,
-        confirmed: Boolean(quote?.quote_id),
-      });
-      setResult(state);
-      if (state.error === "quote_expired" || state.error === "quote_already_used") {
-        setError(
-          lang === "bn"
-            ? "কোটটির মেয়াদ শেষ — অনুগ্রহ করে আবার রেট নিন।"
-            : "That quote expired or was already used — please fetch a fresh rate.",
-        );
-        setScreen("send");
-        return;
-      }
-      if (state.decision === "CLEAR") setScreen("receipt");
-      else if (state.decision === "BLOCKED") setError(t.blocked);
-      else setScreen("review");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t.sendError);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  if (screen === "quote" && quote)
-    return (
-      <QuoteScreen
-        quote={quote}
-        lang={lang}
-        onLang={switchLang}
-        busy={busy}
-        error={error}
-        onSend={send}
-        onBack={() => setScreen("send")}
-      />
-    );
-  if (screen === "review")
-    return <ReviewScreen lang={lang} onLang={switchLang} onDone={reset} />;
-  if (screen === "receipt" && result)
-    return (
-      <ReceiptScreen
-        result={result}
-        lang={lang}
-        onLang={switchLang}
-        arrivalHours={quote?.routes.find((r) => r.name === result.transaction?.route_selected)?.settlement_time_hrs}
-        onRestart={reset}
-      />
-    );
-
-  return (
-    <main className="relative mx-auto w-full max-w-md px-5 py-12">
-      <div className="absolute right-5 top-8">
-        <LangToggle lang={lang} onLang={switchLang} />
-      </div>
-      <h1 className="text-[28px] font-semibold tracking-tight">{t.heading}</h1>
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (canSubmit) getBestRate();
-        }}
-      >
-        <label htmlFor="amount" className="mt-8 block text-muted">
-          {t.amountLabel}
-        </label>
-        <div className="mt-2 flex items-stretch gap-2">
-          <div className="relative flex-1">
-            <input
-              id="amount"
-              inputMode="decimal"
-              autoComplete="off"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="h-14 w-full rounded-lg border border-line py-3 pl-4 pr-16 text-2xl tabular-nums focus:border-accent focus:outline-none"
-            />
-            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted">AED</span>
-          </div>
-          <MicButton onTranscript={onTranscript} disabled={busy} />
-        </div>
-        {transcript && <p className="mt-2 text-muted">{t.heard}: &ldquo;{transcript}&rdquo;</p>}
-
-        <label htmlFor="recipient" className="mt-6 block text-muted">
-          {t.recipientLabel}
-        </label>
-        <input
-          id="recipient"
-          autoComplete="off"
-          value={recipient}
-          onChange={(e) => setRecipient(e.target.value)}
-          placeholder={t.recipientPlaceholder}
-          className="mt-2 h-12 w-full rounded-lg border border-line px-4 focus:border-accent focus:outline-none placeholder:text-muted"
-        />
-
-        {error && <p className="mt-4 font-medium">{error}</p>}
-
-        <button
-          type="submit"
-          disabled={!canSubmit}
-          className="mt-8 h-12 w-full rounded-lg bg-accent text-lg font-semibold text-white disabled:opacity-50"
-        >
-          {busy ? t.checkingRate : t.getBestRate}
-        </button>
-      </form>
-
-      <details className="mt-8">
-        <summary className="cursor-pointer py-2 text-sm text-muted underline">{t.howItWorks}</summary>
-        <FlowDiagram steps={t.flow} />
-      </details>
-
-      {scenario !== "default" && <p className="mt-6 text-[12px] text-review">Simulating scenario: {scenario}</p>}
-      <p className="mt-2 text-[12px] text-muted">{llmOn ? t.llmAssistOn : t.llmAssistOff}</p>
-      <footer className="mt-4 text-[12px] text-muted">
-        Demo scenarios:{" "}
-        {SCENARIO_LINKS.map((s, i) => (
-          <span key={s.param}>
-            {i > 0 && " · "}
-            <a href={`/?scenario=${s.param}`} className="underline">
-              {s.label}
-            </a>
-          </span>
-        ))}
-      </footer>
-    </main>
-  );
+  const reset = () => { setQuote(null); setResult(null); setTranscript(null); setError(null); setScreen("send"); };
+  const getBestRate = async () => { setBusy(true); setError(null); setResult(null); try { const state = await getQuote({ amount: amountValue, recipient_name: recipient.trim() || undefined, payout_method: payoutMethod, demo_scenario: scenario }); if (!state.routes.length) throw new Error(t.noRoutes); setQuote(state); setScreen("quote"); } catch (e) { setError(e instanceof Error ? e.message : t.rateError); } finally { setBusy(false); } };
+  const send = async (routeName: string) => { setBusy(true); setError(null); try { const state = await executeTransfer({ amount: amountValue, recipient_name: recipient.trim() || undefined, payout_method: payoutMethod, selected_route_name: routeName, demo_scenario: scenario, quote_id: quote?.quote_id ?? undefined, confirmed: Boolean(quote?.quote_id) }); setResult(state); if (state.error === "quote_expired" || state.error === "quote_already_used") { setError(lang === "bn" ? "কোটটির মেয়াদ শেষ — আবার রেট নিন।" : "That quote expired — please fetch a fresh rate."); setScreen("send"); return; } if (state.decision === "CLEAR") setScreen("receipt"); else if (state.decision === "BLOCKED") setError(t.blocked); else setScreen("review"); } catch (e) { setError(e instanceof Error ? e.message : t.sendError); } finally { setBusy(false); } };
+  if (screen === "quote" && quote) return <QuoteScreen quote={quote} lang={lang} onLang={switchLang} busy={busy} error={error} onSend={send} onBack={() => setScreen("send")} />;
+  if (screen === "review") return <ReviewScreen lang={lang} onLang={switchLang} onDone={reset} />;
+  if (screen === "receipt" && result) return <ReceiptScreen result={result} lang={lang} onLang={switchLang} arrivalHours={quote?.routes.find(r => r.name === result.transaction?.route_selected)?.settlement_time_hrs} onRestart={reset} />;
+  return <Shell><Topbar lang={lang} onLang={switchLang} /><div className="mx-auto grid max-w-[1180px] gap-8 px-5 pb-12 sm:px-8 lg:grid-cols-[1.15fr_.85fr] lg:px-12 lg:pb-16"><section className="pt-6 lg:pt-16"><div className="mb-8 flex items-center gap-2 text-xs font-semibold text-[var(--emerald)]"><span className="h-2 w-2 rounded-full bg-[var(--emerald)]" /> No hidden fees. Exact recipient amount.</div><h1 className="max-w-2xl text-4xl font-black leading-[1.04] tracking-[-.045em] text-[var(--navy)] sm:text-6xl">Send more home.<br /><span className="text-[var(--saffron-deep)]">See what arrives.</span></h1><p className="mt-6 max-w-xl text-base leading-relaxed text-[var(--ink-soft)] sm:text-lg">Borderless Money compares eligible routes from the UAE to Bangladesh, so your recipient gets the most — not just the lowest advertised fee.</p><div className="mt-10 grid max-w-xl grid-cols-3 gap-3"><Stat icon="spark" value="2.5%" label="Govt. incentive" /><Stat icon="clock" value="2 hr" label="Fastest arrival" /><Stat icon="shield" value="100%" label="Screened routes" /></div><div className="mt-10 hidden items-center gap-3 text-xs text-[var(--ink-soft)] sm:flex"><div className="flex -space-x-2"><span className="grid h-8 w-8 place-items-center rounded-full border-2 border-[var(--sand)] bg-[#f4d6a4] text-xs">A</span><span className="grid h-8 w-8 place-items-center rounded-full border-2 border-[var(--sand)] bg-[#a9d7c2] text-xs">R</span><span className="grid h-8 w-8 place-items-center rounded-full border-2 border-[var(--sand)] bg-[#c6c1e7] text-xs">M</span></div><span>Built for families sending across borders.</span></div></section><SendCard amount={amount} setAmount={setAmount} recipient={recipient} setRecipient={setRecipient} transcript={transcript} setTranscript={setTranscript} busy={busy} error={error} llmOn={llmOn} scenario={scenario} payoutMethod={payoutMethod} setPayoutMethod={setPayoutMethod} canSubmit={Number.isFinite(amountValue) && amountValue > 0 && !busy} onSubmit={getBestRate} t={t} /></div><footer className="mx-auto flex max-w-[1180px] flex-col gap-3 border-t border-[var(--line)] px-5 py-5 text-[11px] text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12"><span>© 2026 Borderless Money · Demo environment</span><span>Formal-channel remittance · Incentive eligibility varies by route</span></footer></Shell>;
 }
+function Stat({ icon, value, label }: { icon: "spark" | "clock" | "shield"; value: string; label: string }) { return <div className="rounded-2xl border border-[var(--line)] bg-white/60 p-3.5"><div className="mb-2 text-[var(--saffron-deep)]"><Icon name={icon} size={15} /></div><p className="bm-mono text-lg font-extrabold text-[var(--navy)]">{value}</p><p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">{label}</p></div>; }
+function SendCard({ amount, setAmount, recipient, setRecipient, transcript, setTranscript, busy, error, llmOn, scenario, payoutMethod, setPayoutMethod, canSubmit, onSubmit, t }: any) { return <section className="bm-card bm-fade-up mt-4 overflow-hidden lg:mt-14"><div className="border-b border-[var(--line)] bg-[var(--navy)] px-6 py-5 text-white sm:px-8"><div className="flex items-center justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.2em] text-[var(--saffron)]">Start a transfer</p><h2 className="mt-1 text-xl font-bold">What should we send?</h2></div><div className="rounded-full border border-white/15 px-3 py-1.5 text-[10px] text-slate-300">AED → BDT</div></div></div><form onSubmit={(e) => { e.preventDefault(); if (canSubmit) onSubmit(); }} className="space-y-6 p-6 sm:p-8"><div><label htmlFor="amount" className="mb-2 block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)]">You send</label><div className="flex items-center rounded-2xl border-2 border-[var(--saffron)] bg-white px-4 py-2 bm-glow"><input id="amount" inputMode="decimal" autoComplete="off" value={amount} onChange={(e) => setAmount(e.target.value)} className="min-w-0 flex-1 bg-transparent text-4xl font-black tracking-tight text-[var(--navy)] outline-none" /><span className="mr-2 text-sm font-bold text-slate-400">AED</span><MicButton onTranscript={(text) => { setTranscript(text); const m = text.replace(/,/g, "").match(/(\d+(?:\.\d+)?)/); if (m) setAmount(m[1]); }} disabled={busy} /></div>{transcript && <p className="mt-2 text-xs text-slate-500">Heard: “{transcript}”</p>}</div><div><label htmlFor="payout-method" className="mb-2 block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)]">They receive via</label><div className="relative"><select id="payout-method" value={payoutMethod} onChange={(e) => setPayoutMethod(e.target.value)} className="w-full appearance-none rounded-2xl border border-[var(--line)] bg-white px-4 py-3 text-sm font-semibold text-[var(--navy)] outline-none focus:border-[var(--saffron-deep)]">{PAYOUT_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label} · {option.detail}</option>)}</select><span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">⌄</span></div><p className="mt-2 text-[11px] text-slate-400">Available payout methods are priced and screened for this corridor.</p></div><div><label htmlFor="recipient" className="mb-2 block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)]">Recipient</label><div className="flex items-center gap-3 rounded-2xl border border-[var(--line)] bg-white px-4 py-3 focus-within:border-[var(--saffron-deep)]"><span className="grid h-8 w-8 place-items-center rounded-full bg-[#eaf4ee] text-sm text-[var(--emerald)]">⌁</span><input id="recipient" autoComplete="off" value={recipient} onChange={(e) => setRecipient(e.target.value)} placeholder="Name or bKash handle" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400" /></div></div>{error && <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{error}</div>}<button type="submit" disabled={!canSubmit} className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-[var(--navy)] text-base font-bold text-white transition hover:bg-[var(--navy-2)] disabled:cursor-not-allowed disabled:opacity-50">{busy ? "Finding the best route…" : <>{t.getBestRate}<Icon name="arrow" size={19} /></>}</button><div className="flex items-start gap-2 text-[11px] leading-relaxed text-slate-400"><Icon name="shield" size={14} /><span>We check fees, FX, incentive eligibility, risk, and sanctions before showing a route.</span></div><div className="flex items-center justify-between border-t border-[var(--line)] pt-4 text-[10px] text-slate-400"><span>{llmOn ? "AI assist enabled" : "Deterministic quote engine"}</span>{scenario !== "default" ? <span className="text-[var(--saffron-deep)]">Demo: {scenario}</span> : <span>Quote expires in 10 min</span>}</div></form></section>; }
 
-function LangToggle({ lang, onLang }: { lang: Lang; onLang: (l: Lang) => void }) {
-  return (
-    <div className="flex items-center gap-1 text-sm" role="group" aria-label="Language / ভাষা">
-      <button
-        type="button"
-        onClick={() => onLang("en")}
-        aria-pressed={lang === "en"}
-        className={"rounded-lg px-2 py-2 " + (lang === "en" ? "font-semibold text-ink" : "text-muted")}
-      >
-        EN
-      </button>
-      <span className="text-muted">|</span>
-      <button
-        type="button"
-        onClick={() => onLang("bn")}
-        aria-pressed={lang === "bn"}
-        className={"rounded-lg px-2 py-2 " + (lang === "bn" ? "font-semibold text-ink" : "text-muted")}
-      >
-        বাংলা
-      </button>
-    </div>
-  );
-}
+function QuoteScreen({ quote, lang, onLang, busy, error, onSend, onBack }: { quote: AgentStateResponse; lang: Lang; onLang: (l: Lang) => void; busy: boolean; error: string | null; onSend: (route: string) => void; onBack: () => void }) { const t = STRINGS[lang]; const bestPossible = [...quote.routes].filter(r => r.pricing_completeness === "complete" && r.breakdown.true_net_receive_bdt != null).sort((a, b) => (b.breakdown.true_net_receive_bdt ?? 0) - (a.breakdown.true_net_receive_bdt ?? 0))[0] ?? quote.routes[0]; const [selectedName, setSelectedName] = useState(bestPossible.name); const selected = quote.routes.find(r => r.name === selectedName) ?? bestPossible; const marketValue = (selected.breakdown.amount_source ?? 0) * selected.mid_market_rate; const netValue = selected.breakdown.true_net_receive_bdt ?? 0; const valueDifference = marketValue - netValue; return <Shell><Topbar lang={lang} onLang={onLang} eyebrow="Quote intelligence" /><div className="mx-auto max-w-[1180px] px-5 pb-14 sm:px-8 lg:px-12"><div className="mb-8 flex flex-col justify-between gap-5 border-b border-[var(--line)] pb-8 sm:flex-row sm:items-end"><div><button onClick={onBack} className="mb-5 text-xs font-bold text-[var(--ink-soft)] hover:text-[var(--navy)]">← Change transfer</button><p className="bm-eyebrow">Your recipient receives</p><h1 className="bm-mono mt-2 text-5xl font-black tracking-[-.05em] text-[var(--navy)] sm:text-7xl">{fmtBDT(selected.breakdown.true_net_receive_bdt)}</h1><p className="mt-3 flex items-center gap-2 text-sm font-semibold text-[var(--emerald)]"><Icon name="check" size={16} /> Includes {fmtBDT(selected.breakdown.govt_incentive_added_bdt)} government incentive</p></div><div className="rounded-2xl border border-[var(--line)] bg-white/60 p-4 text-sm"><p className="text-xs text-slate-400">Quote reference</p><p className="mt-1 font-mono text-xs text-[var(--navy)]">{quote.quote_id ?? "fresh quote"}</p><p className="mt-3 text-xs text-slate-400">Decision state</p><p className="mt-1 font-semibold text-[var(--emerald)]">{quote.decision === "CLEAR" ? "Ready to send" : quote.decision}</p></div></div><div className="grid gap-8 lg:grid-cols-[1.1fr_.9fr]"><section><div className="mb-3 flex items-end justify-between"><div><p className="bm-eyebrow">Ranked routes</p><h2 className="mt-1 text-2xl font-bold text-[var(--navy)]">Choose how it arrives</h2></div><span className="text-xs text-slate-400">{quote.routes.length} eligible options</span></div><div className="space-y-3">{quote.routes.map((route, index) => <RouteCard key={route.name} route={route} selected={route.name === selected.name} index={index} onClick={() => setSelectedName(route.name)} />)}</div></section><aside className="space-y-4"><div className="bm-card p-6"><p className="bm-eyebrow">Why this route</p><div className="mt-4 flex items-start gap-3"><div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#fff2d0] text-[var(--saffron-deep)]"><Icon name="spark" /></div><div><h3 className="font-bold text-[var(--navy)]">Net receive beats fee hunting</h3><p className="mt-1 text-sm leading-relaxed text-[var(--ink-soft)]">{selected.is_best ? `${selected.rail} leaves the most money with your recipient after FX, fees, and eligibility.` : `${selected.rail} leaves ${Math.round(selected.advantage_bdt_vs_best ?? 0).toLocaleString()} BDT less than the recommended route.`}</p></div></div><div className="bm-dashed mt-5 pt-4"><CompareRow label="Amount sent" value={fmtAED(selected.breakdown.amount_source)} /><CompareRow label="FX rate" value={`1 AED = ${selected.fx_rate.toFixed(2)} BDT`} /><CompareRow label="Route fee" value={fmtAED(selected.fee_aed)} /><CompareRow label="Arrival" value={`~${selected.settlement_time_hrs} hours`} /><div className="my-2 border-t border-dashed border-[#d9d0c0] pt-2"><CompareRow label="AED at mid-market (actual value)" value={fmtBDT(marketValue)} /><CompareRow label="Recipient net (transmitted)" value={fmtBDT(netValue)} /><CompareRow label="Difference" value={`${valueDifference >= 0 ? "−" : "+"}${fmtBDT(Math.abs(valueDifference))}`} /></div></div></div><div className="rounded-2xl border border-[#cfe9dd] bg-[#effaf4] p-5"><div className="flex gap-3"><Icon name="shield" size={19} /><div><p className="font-bold text-[#167955]">Compliance cleared</p><p className="mt-1 text-xs leading-relaxed text-[#4a816c]">Risk and sanctions screening passed for the recommended route. You’ll confirm the exact quote before anything moves.</p></div></div></div>{error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}<button onClick={() => onSend(selected.name)} disabled={busy} className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--navy)] text-base font-bold text-white disabled:opacity-50">{busy ? t.sending : `Send with ${selected.rail}`} <Icon name="arrow" size={18} /></button><p className="text-center text-[11px] leading-relaxed text-slate-400">By continuing, you confirm the recipient and this exact quoted route.</p></aside></div></div></Shell>; }
+function RouteCard({ route, selected, recommended, index, onClick }: { route: RouteOption; selected: boolean; recommended?: boolean; index: number; onClick: () => void }) { return <button type="button" onClick={onClick} className={`bm-fade-up w-full rounded-2xl border p-5 text-left transition ${selected ? "border-[var(--saffron)] bg-[#fffaf0] shadow-[0_12px_30px_rgba(244,185,66,.12)]" : "border-[var(--line)] bg-white/60 hover:border-slate-300"}`}><div className="flex items-start gap-4"><div className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl text-sm font-black ${selected ? "bg-[var(--saffron)] text-[var(--navy)]" : "bg-[#eef0f2] text-slate-400"}`}>0{index + 1}</div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center justify-between gap-3"><div><div className="flex flex-wrap items-center gap-2"><p className="font-bold text-[var(--navy)]">{route.rail}</p>{recommended && <span className="rounded-full bg-[#f8e6b4] px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-[var(--saffron-deep)]">Recommended</span>}</div><p className="mt-1 text-xs text-slate-400">{route.payout_method} · {route.incentive_eligible ? "incentive eligible" : "no incentive"}</p></div><p className="bm-mono text-xl font-black text-[var(--navy)]">{fmtBDT(route.breakdown.true_net_receive_bdt)}</p></div><div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-[var(--ink-soft)]"><span className="flex items-center gap-1"><Icon name="clock" size={14} /> ~{route.settlement_time_hrs}h arrival</span><span>{fmtAED(route.fee_aed)} fee</span><span className={route.incentive_eligible ? "font-semibold text-[var(--emerald)]" : "text-slate-400"}>{route.incentive_eligible ? "✓ 2.5% bonus" : "— No bonus"}</span></div></div><div className={`mt-1 h-5 w-5 rounded-full border-2 ${selected ? "border-[var(--saffron-deep)] bg-[var(--saffron)] shadow-[inset_0_0_0_3px_#fffaf0]" : "border-slate-300"}`} /></div></button>; }
+function CompareRow({ label, value }: { label: string; value: string }) { return <div className="flex justify-between gap-4 py-1.5 text-sm"><span className="text-[var(--ink-soft)]">{label}</span><span className="bm-mono font-semibold text-[var(--navy)]">{value}</span></div>; }
 
-function QuoteScreen({
-  quote,
-  lang,
-  onLang,
-  busy,
-  error,
-  onSend,
-  onBack,
-}: {
-  quote: AgentStateResponse;
-  lang: Lang;
-  onLang: (l: Lang) => void;
-  busy: boolean;
-  error: string | null;
-  onSend: (routeName: string) => void;
-  onBack: () => void;
-}) {
-  const t = STRINGS[lang];
-  const [selectedName, setSelectedName] = useState(quote.routes[0].name);
-  const selected = quote.routes.find((r) => r.name === selectedName) ?? quote.routes[0];
-  const best = quote.routes[0];
-  const baseline =
-    quote.routes.find((r) => r.rail === "Traditional SWIFT") ?? quote.routes[quote.routes.length - 1];
-  const isBestSelected = selected.name === best.name;
-
-  const comparison = isBestSelected
-    ? t.routedMore(
-        best.rail,
-        Math.round(
-          (best.breakdown.true_net_receive_bdt ?? 0) - (baseline.breakdown.true_net_receive_bdt ?? 0),
-        ).toLocaleString("en-US"),
-      )
-    : t.routedLess(
-        selected.rail,
-        Math.round(selected.advantage_bdt_vs_best ?? 0).toLocaleString("en-US"),
-        best.rail,
-      );
-
-  return (
-    <main className="relative mx-auto w-full max-w-md px-5 py-12">
-      <div className="absolute right-5 top-8">
-        <LangToggle lang={lang} onLang={onLang} />
-      </div>
-      <p className="text-muted">{t.theyReceive}</p>
-      <p className="mt-1 text-[44px] font-bold leading-none tracking-tight tabular-nums">
-        {fmtBDT(selected.breakdown.true_net_receive_bdt)}
-      </p>
-      <p className="mt-3 text-accent">
-        {t.includesBonus(fmtBDT(selected.breakdown.govt_incentive_added_bdt))}
-      </p>
-
-      <div role="radiogroup" aria-label={lang === "bn" ? "রুট" : "Route"} className="mt-10 rounded-lg border border-line">
-        {quote.routes.map((r, i) => {
-          const isSelected = r.name === selected.name;
-          return (
-            <button
-              key={r.name}
-              type="button"
-              role="radio"
-              aria-checked={isSelected}
-              onClick={() => setSelectedName(r.name)}
-              className={
-                "flex w-full items-start gap-3 px-4 py-4 text-left text-ink" +
-                (i > 0 ? " border-t border-line" : "")
-              }
-            >
-              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" className="mt-1 shrink-0">
-                <circle cx="9" cy="9" r="8" fill="none" stroke={isSelected ? "#0F766E" : "#6B7280"} strokeWidth="1.5" />
-                {isSelected && <circle cx="9" cy="9" r="4" fill="#0F766E" />}
-              </svg>
-              <span className="min-w-0 flex-1">
-                <span className="flex items-baseline justify-between gap-3">
-                  <span className="font-medium">
-                    {r.rail}
-                    {r.is_best && <span className="ml-2 text-accent">{t.recommended}</span>}
-                  </span>
-                  <span className="shrink-0 tabular-nums">{fmtBDT(r.breakdown.true_net_receive_bdt)}</span>
-                </span>
-                <span className="block text-muted">{t.feeArrives(fmtAED(r.fee_aed), r.settlement_time_hrs)}</span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      <p className="mt-4">{comparison}</p>
-
-      {error && <p className="mt-4 font-medium">{error}</p>}
-
-      <button
-        onClick={() => onSend(selected.name)}
-        disabled={busy}
-        className="mt-8 h-12 w-full rounded-lg bg-accent text-lg font-semibold text-white disabled:opacity-50"
-      >
-        {busy ? t.sending : t.sendWith(selected.rail)}
-      </button>
-      <button
-        onClick={onBack}
-        disabled={busy}
-        className="mt-3 h-12 w-full rounded-lg border border-line text-lg font-medium disabled:opacity-50"
-      >
-        {t.changeAmount}
-      </button>
-
-      <p className="mt-6 text-[12px] leading-relaxed text-muted">{t.footnote}</p>
-    </main>
-  );
-}
-
-function ReviewScreen({
-  lang,
-  onLang,
-  onDone,
-}: {
-  lang: Lang;
-  onLang: (l: Lang) => void;
-  onDone: () => void;
-}) {
-  const t = STRINGS[lang];
-  return (
-    <main className="relative mx-auto w-full max-w-md px-5 py-16">
-      <div className="absolute right-5 top-8">
-        <LangToggle lang={lang} onLang={onLang} />
-      </div>
-      <p className="font-medium text-review">{t.inReview}</p>
-      <p className="mt-4">{t.reviewSentence}</p>
-      <button
-        onClick={onDone}
-        className="mt-8 h-12 w-full rounded-lg bg-accent text-lg font-semibold text-white"
-      >
-        {t.gotIt}
-      </button>
-    </main>
-  );
-}
-
-function ReceiptScreen({
-  result,
-  lang,
-  onLang,
-  arrivalHours,
-  onRestart,
-}: {
-  result: AgentStateResponse;
-  lang: Lang;
-  onLang: (l: Lang) => void;
-  arrivalHours?: number;
-  onRestart: () => void;
-}) {
-  const t = STRINGS[lang];
-  const tx = result.transaction;
-  if (!tx) return null;
-  const execution = result.execution;
-
-  return (
-    <main className="relative mx-auto w-full max-w-md px-5 py-12">
-      <div className="absolute right-5 top-8">
-        <LangToggle lang={lang} onLang={onLang} />
-      </div>
-      <h1 className="text-[28px] font-semibold tracking-tight text-accent">{t.sent}</h1>
-      <p className="mt-1 text-sm font-medium text-accent">{t.cleared}</p>
-
-      <dl className="mt-8">
-        <Row label={t.amountRow} value={fmtAED(tx.amount_source)} />
-        <Row label={t.theyReceive} value={fmtBDT(tx.true_net_receive_bdt)} accent />
-        <Row label={t.recipientLabel} value={`${tx.recipient_name} · ${tx.recipient_handle}`} />
-        <Row label={t.routeRow} value={tx.route_selected ?? "—"} />
-        <Row label={t.arrivesRow} value={t.inAboutHours(arrivalHours ?? 2)} />
-        <Row label={t.referenceRow} value={tx.transaction_id} mono />
-      </dl>
-
-      {tx.stellar_hash && (
-        <div className="mt-6">
-          <ChainTrail
-            hash={tx.stellar_hash}
-            network={execution?.network ?? "SIMULATED"}
-            labels={{
-              title: t.chainTrailTitle,
-              prev: t.blockPrev,
-              yours: t.blockYours,
-              next: t.blockNext,
-            }}
-          />
-        </div>
-      )}
-
-      <details className="mt-6">
-        <summary className="cursor-pointer py-2 text-sm text-muted underline">{t.technicalDetails}</summary>
-        <pre className="mt-2 overflow-x-auto text-[13px] leading-relaxed">
-          {JSON.stringify(tx.iso_20022, null, 2)}
-        </pre>
-        <p className="mt-3 text-[13px] leading-relaxed text-muted">
-          Settlement: {execution?.network ?? "SIMULATED"} · Hash: {tx.stellar_hash} · Memo:{" "}
-          {execution?.memo} · Created: {tx.created_at}
-        </p>
-      </details>
-
-      <button
-        onClick={onRestart}
-        className="mt-8 h-12 w-full rounded-lg border border-line text-lg font-medium"
-      >
-        {t.sendAnother}
-      </button>
-    </main>
-  );
-}
-
-function Row({
-  label,
-  value,
-  accent,
-  mono,
-}: {
-  label: string;
-  value: string;
-  accent?: boolean;
-  mono?: boolean;
-}) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-line py-3 last:border-b-0">
-      <dt className="text-muted">{label}</dt>
-      <dd
-        className={
-          "text-right tabular-nums" +
-          (accent ? " font-semibold text-accent" : "") +
-          (mono ? " font-mono text-sm" : "")
-        }
-      >
-        {value}
-      </dd>
-    </div>
-  );
-}
+function ReviewScreen({ lang, onLang, onDone }: { lang: Lang; onLang: (l: Lang) => void; onDone: () => void }) { const t = STRINGS[lang]; return <Shell><Topbar lang={lang} onLang={onLang} eyebrow="Manual review" /><div className="mx-auto max-w-[620px] px-5 py-16 text-center sm:px-8"><div className="mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-[#fff2d0] text-[var(--saffron-deep)]"><Icon name="shield" size={34} /></div><p className="bm-eyebrow mt-8">{t.inReview}</p><h1 className="mt-2 text-4xl font-black tracking-tight text-[var(--navy)]">A careful pause.</h1><p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-[var(--ink-soft)]">{t.reviewSentence} We’ll keep the transfer safe while the details are checked.</p><button onClick={onDone} className="mt-8 h-13 rounded-2xl bg-[var(--navy)] px-8 py-4 font-bold text-white">{t.gotIt}</button></div></Shell>; }
+function ReceiptScreen({ result, lang, onLang, arrivalHours, onRestart }: { result: AgentStateResponse; lang: Lang; onLang: (l: Lang) => void; arrivalHours?: number; onRestart: () => void }) { const t = STRINGS[lang]; const tx = result.transaction; if (!tx) return null; const execution = result.execution; return <Shell><Topbar lang={lang} onLang={onLang} eyebrow="Transfer receipt" /><div className="mx-auto max-w-[840px] px-5 pb-14 sm:px-8 lg:px-12"><div className="mb-8 flex items-center gap-4"><div className="grid h-14 w-14 place-items-center rounded-2xl bg-[#dff5e9] text-[var(--emerald)]"><Icon name="check" size={28} /></div><div><p className="bm-eyebrow">{t.cleared}</p><h1 className="mt-1 text-3xl font-black tracking-tight text-[var(--navy)]">{t.sent}</h1></div></div><div className="bm-card overflow-hidden"><div className="bg-[var(--navy)] p-7 text-white sm:p-9"><p className="text-xs text-slate-400">Your recipient receives</p><p className="bm-mono mt-1 text-4xl font-black text-[var(--saffron)]">{fmtBDT(tx.true_net_receive_bdt)}</p><p className="mt-2 text-sm text-slate-300">Arriving in about {arrivalHours ?? 2} hours via {tx.route_selected}</p></div><div className="p-6 sm:p-9"><div className="grid gap-x-10 gap-y-1 sm:grid-cols-2"><Row label={t.amountRow} value={fmtAED(tx.amount_source)} /><Row label={t.recipientLabel} value={`${tx.recipient_name} · ${tx.recipient_handle}`} /><Row label={t.routeRow} value={tx.route_selected ?? "—"} /><Row label={t.referenceRow} value={tx.transaction_id} mono /></div>{tx.stellar_hash && <div className="mt-8 border-t border-[var(--line)] pt-6"><ChainTrail hash={tx.stellar_hash} network={execution?.network ?? "SIMULATED"} labels={{ title: t.chainTrailTitle, prev: t.blockPrev, yours: t.blockYours, next: t.blockNext }} /></div>}<details className="mt-7"><summary className="cursor-pointer text-xs font-bold text-[var(--ink-soft)]">{t.technicalDetails}</summary><pre className="mt-3 overflow-x-auto rounded-xl bg-[#f4f1ea] p-4 text-[11px] leading-relaxed">{JSON.stringify(tx.iso_20022, null, 2)}</pre></details><button onClick={onRestart} className="mt-8 h-13 w-full rounded-2xl border border-[var(--line)] font-bold text-[var(--navy)] hover:bg-[#faf8f2]">{t.sendAnother}</button></div></div></div></Shell>; }
+function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) { return <div className="flex items-start justify-between gap-4 border-b border-dashed border-[var(--line)] py-3 text-sm"><dt className="text-[var(--ink-soft)]">{label}</dt><dd className={`text-right font-semibold text-[var(--navy)] ${mono ? "font-mono text-xs" : ""}`}>{value}</dd></div>; }
