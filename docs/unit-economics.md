@@ -1,4 +1,4 @@
-# Borderless Money — Unit Economics (half-page model)
+# xPay — Unit Economics (half-page model)
 
 **Status: every number below is an assumption for the preliminary round.** They are internally consistent and sized to be defensible in 60 seconds of Q&A, but none are validated. Replace each with pilot data before the in-person round. Our revenue **never touches the government's 2.5% incentive** — that belongs entirely to the beneficiary, by design and by law.
 

@@ -1,4 +1,4 @@
-# Borderless Money — API Contracts
+# xPay — API Contracts
 
 Base URL (dev): `http://localhost:8000` · Interactive docs: `/docs`
 These contracts are the team-wide interface — frontend and B2B RaaS consumers build
@@ -9,9 +9,9 @@ against them.
 - **Request tracing:** every response carries `X-Request-ID` (client-supplied
   echoed if sane, else generated).
 - **Rate limiting:** per-IP fixed window on `/api/*` except `/api/health`,
-  `/api/ready` (default 240/minute, env `BORDERLESS_MONEY_RATE_LIMIT`).
+  `/api/ready` (default 240/minute, env `XPAY_RATE_LIMIT`).
   Exceeded → `429` with `{"error": {"code": "rate_limited", ...}}`.
-- **Optional API key:** set `BORDERLESS_MONEY_API_KEY` to require `X-API-Key`
+- **Optional API key:** set `XPAY_API_KEY` to require `X-API-Key`
   on the private endpoints (`/api/agent/*`, `/api/transactions/*`,
   `/api/quotes/*`); unset = demo-open. `/api/health`, `/api/ready`,
   `/api/routes/compare`, `/metrics` stay open (no private data behind them).

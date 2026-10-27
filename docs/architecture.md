@@ -1,4 +1,4 @@
-# Borderless Money — System Architecture
+# xPay — System Architecture
 
 Two-layer agentic orchestration over a deterministic Python scoring engine. The LLM
 agent never does math itself — it *calls tools* and *explains* their output. That is
@@ -146,7 +146,7 @@ Voice "Send 1,000 dirhams to my mother's bKash in Dhaka"
 | bKash/Nagad payout | — | mock registry |
 
 PostgreSQL is the production store (`db/schema.sql`); the demo store is in-memory with
-optional SQLite persistence via `BORDERLESS_MONEY_DB_PATH` — zero setup for judges.
+optional SQLite persistence via `XPAY_DB_PATH` — zero setup for judges.
 
 ## Quote Lifecycle & Failure Paths (added Oct 25)
 
@@ -164,7 +164,7 @@ matches — and the receipt uses **the quoted numbers verbatim**. Failure codes:
 API-level duplicates are absorbed by the `Idempotency-Key` header (first
 response wins, replays labeled `idempotent_replay`). Cross-cutting: `X-Request-ID`
 on every response, per-IP rate limiting on `/api/*` (ops probes exempt),
-optional `X-API-Key` enforcement via `BORDERLESS_MONEY_API_KEY`.
+optional `X-API-Key` enforcement via `XPAY_API_KEY`.
 
 Failure paths, all exercised in `backend/evals/eval_scenarios.py`
 (docs/evaluation_report.json):

@@ -2,7 +2,7 @@
 
 **Status: implemented and test-covered** (`backend/tests/test_financial.py`,
 `backend/tests/test_core.py`). This document is the single source of truth for
-how every monetary figure in Borderless Money is computed. If code and this
+how every monetary figure in xPay is computed. If code and this
 document disagree, that is a bug — file it.
 
 ## 1. Arithmetic substrate

@@ -1,4 +1,4 @@
-# Borderless Money × AI Builders Congress — Competition Analysis
+# xPay × AI Builders Congress — Competition Analysis
 
 Verified against the live event page (cloudcampbd.com/ai-builders-congress, fetched 2026-10-24). Where a fact comes from the advisory rather than the page, it is marked **[verify in portal]**.
 
@@ -57,5 +57,5 @@ Verified against the live event page (cloudcampbd.com/ai-builders-congress, fetc
 4. The corridor figures — **$35.56B FY2025-26 total, $4.58B UAE corridor** — were confirmed by the team and are now filled into `demo-script.md` and `one-pager.md`. Keep the Bangladesh Bank release link citable in Q&A; re-verify the link resolves before recording day.
 5. Config format: advisory said YAML; we used **JSON** so the whole engine + tests stay stdlib-only (schema identical to the suggested one).
 6. "Don't spend the week adding features" — right instinct, but 4 of the 5 suggested upgrades map 1:1 to published criteria; that's submission work. The one we'd have skipped if short on time was GNN training — done anyway with an honest eval.
-7. **Missed by the advisory:** the congress also runs **Zero to Launch** (500 finalists, 1-hour live build, Oct 15–Nov 15 preliminary) — **decision (Oct 24): Borderless Money is NOT entering Zero to Launch.** We have no dedicated sub-team; a live-build format would cannibalize the video, NRB outreach, and recording time in the only week that matters. The team lead records this call so nobody relitigates it on Day 5. Revisit only if the preliminary is submitted early (Oct 29) AND a two-person sub-team volunteers — otherwise closed.
+7. **Missed by the advisory:** the congress also runs **Zero to Launch** (500 finalists, 1-hour live build, Oct 15–Nov 15 preliminary) — **decision (Oct 24): xPay is NOT entering Zero to Launch.** We have no dedicated sub-team; a live-build format would cannibalize the video, NRB outreach, and recording time in the only week that matters. The team lead records this call so nobody relitigates it on Day 5. Revisit only if the preliminary is submitted early (Oct 29) AND a two-person sub-team volunteers — otherwise closed.
 8. **Business model was the thin 20%** — fixed Oct 24: the one-pager now carries the unit-economics model (flat AED 2 + 0.15% partner take rate, AED 8 CAC, 10K senders → ~AED 65K monthly gross margin, all labeled assumptions); full model in [docs/unit-economics.md](unit-economics.md). The in-person round is a stand-up performance — [docs/pitch-script.md](pitch-script.md) drafts the 3-minute spoken pitch now, rehearsed twice.

@@ -58,11 +58,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build full-system backend image
-        run: docker build -t borderless-money-backend -f backend/Dockerfile backend
+        run: docker build -t xpay-backend -f backend/Dockerfile backend
 
       - name: Run image smoke test
         run: |
-          docker run -d --name bm -p 8000:8000 borderless-money-backend
+          docker run -d --name xpay -p 8000:8000 xpay-backend
           for i in $(seq 1 30); do
             if curl -sf http://localhost:8000/api/health > /dev/null; then break; fi
             sleep 2

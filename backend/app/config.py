@@ -32,14 +32,14 @@ DEMO_SENDER = _c["demo_sender"]
 DEMO_RECIPIENTS = _c["demo_recipients"]
 
 # --- Storage ----------------------------------------------------------------
-# In-memory by default; set BORDERLESS_MONEY_DB_PATH=/path/file.sqlite for persistence.
-DB_PATH = os.environ.get("BORDERLESS_MONEY_DB_PATH", "")
+# In-memory by default; set XPAY_DB_PATH=/path/file.sqlite for persistence.
+DB_PATH = os.environ.get("XPAY_DB_PATH", "")
 
 # --- CORS -------------------------------------------------------------------
 CORS_ORIGINS = [
     o.strip()
     for o in os.environ.get(
-        "BORDERLESS_MONEY_CORS_ORIGINS",
+        "XPAY_CORS_ORIGINS",
         "http://localhost:3000,http://127.0.0.1:3000",
     ).split(",")
     if o.strip()

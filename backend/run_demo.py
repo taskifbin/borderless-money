@@ -53,7 +53,7 @@ def print_receipt(state):
 
 
 def main():
-    print("🚀 BORDERLESS MONEY · end-to-end demo (UAE → Bangladesh)")
+    print("🚀 XPAY · end-to-end demo (UAE → Bangladesh)")
     print("   Agentic, jurisdiction-aware remittance intelligence")
 
     # 1) Voice/text intent

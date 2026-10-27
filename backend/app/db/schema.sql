@@ -1,4 +1,4 @@
--- Borderless Money — PostgreSQL schema (production store)
+-- xPay — PostgreSQL schema (production store)
 -- The demo uses the in-memory/SQLite store (app/services/store.py); this is
 -- the production schema with the incentive + RegTech columns explicit.
 

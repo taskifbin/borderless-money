@@ -1,4 +1,4 @@
-# Borderless Money backend — FULL install (what the README describes)
+# xPay backend — FULL install (what the README describes)
 # Everything here is optional at runtime (graceful fallbacks) but the full
 # system — LangGraph orchestration, PyG risk model, embeddings — needs these.
 fastapi>=0.110

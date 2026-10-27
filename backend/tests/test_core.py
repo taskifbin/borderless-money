@@ -1,4 +1,4 @@
-"""Borderless Money core tests — stdlib only (python3 backend/tests/test_core.py).
+"""xPay core tests — stdlib only (python3 backend/tests/test_core.py).
 
 No pytest, no installs: run directly. The FastAPI layer is exercised via the
 orchestrator, which the API wraps 1:1.

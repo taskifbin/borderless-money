@@ -16,7 +16,7 @@ import os
 import re
 import urllib.request
 
-logger = logging.getLogger("borderless-money.llm")
+logger = logging.getLogger("xpay.llm")
 
 DEFAULT_TIMEOUT_S = 6
 
@@ -32,7 +32,7 @@ ALLOWED_URGENCY = {"normal", "urgent"}
 
 def is_enabled() -> bool:
     """True only when an API key is configured. No key = deterministic mode."""
-    return bool(os.environ.get("BORDERLESS_MONEY_LLM_API_KEY"))
+    return bool(os.environ.get("XPAY_LLM_API_KEY"))
 
 
 def _extract_json(raw: str) -> str:
@@ -46,8 +46,8 @@ def _extract_json(raw: str) -> str:
 
 def _call_live(prompt: str) -> str:
     """OpenAI-compatible chat completion. Only called when is_enabled()."""
-    base = os.environ.get("BORDERLESS_MONEY_LLM_BASE_URL", "https://api.openai.com/v1").rstrip("/")
-    model = os.environ.get("BORDERLESS_MONEY_LLM_MODEL", "gpt-4o-mini")
+    base = os.environ.get("XPAY_LLM_BASE_URL", "https://api.openai.com/v1").rstrip("/")
+    model = os.environ.get("XPAY_LLM_MODEL", "gpt-4o-mini")
     req = urllib.request.Request(
         f"{base}/chat/completions",
         data=json.dumps({
@@ -55,7 +55,7 @@ def _call_live(prompt: str) -> str:
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0,
         }).encode(),
-        headers={"Authorization": f"Bearer {os.environ['BORDERLESS_MONEY_LLM_API_KEY']}",
+        headers={"Authorization": f"Bearer {os.environ['XPAY_LLM_API_KEY']}",
                  "Content-Type": "application/json"},
     )
     with urllib.request.urlopen(req, timeout=DEFAULT_TIMEOUT_S) as resp:

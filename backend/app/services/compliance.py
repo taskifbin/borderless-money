@@ -30,7 +30,7 @@ from pathlib import Path
 
 _DATA_FILE = Path(__file__).resolve().parents[2] / "data" / "ofac_sample.json"
 
-logger = logging.getLogger("borderless-money.compliance")
+logger = logging.getLogger("xpay.compliance")
 
 # Tunable decision thresholds (documented in docs/kpis.md and eval output)
 THRESHOLDS = {

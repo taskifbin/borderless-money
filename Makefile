@@ -1,4 +1,4 @@
-# Borderless Money — one-command verification targets
+# xPay — one-command verification targets
 # Judges: `make smoke` runs the whole gate on a fresh venv in <60s.
 
 PY      := python3
@@ -70,7 +70,7 @@ run-frontend:
 	cd frontend && npm run dev
 
 docker-build:
-	docker build -t borderless-money-backend -f backend/Dockerfile backend
+	docker build -t xpay-backend -f backend/Dockerfile backend
 
 docker-up:
 	docker compose up --build

@@ -1,4 +1,4 @@
-# Borderless Money — 11-Day Sprint Plan (Oct 20 → Oct 31)
+# xPay — 11-Day Sprint Plan (Oct 20 → Oct 31)
 
 > **⚠️ Superseded (Oct 24):** [submission-plan.md](submission-plan.md) v2 is now the **single critical path** — recording Oct 25–26, hosted deploy Oct 27, pitch rehearsal Oct 28, submission Oct 29. This file is kept as the historical build log: the Days 1–5 rows describe what landed in the repo, and the Days 6–11 rows are superseded by the submission plan. Do not plan from this file.
 

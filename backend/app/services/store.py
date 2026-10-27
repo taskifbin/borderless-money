@@ -1,6 +1,6 @@
 """Transaction store — in-memory for the demo, optional SQLite persistence.
 
-Set BORDERLESS_MONEY_DB_PATH=/path/file.sqlite to persist receipts across restarts.
+Set XPAY_DB_PATH=/path/file.sqlite to persist receipts across restarts.
 Production store is PostgreSQL (see app/db/schema.sql); this keeps the demo
 zero-setup for judges.
 """

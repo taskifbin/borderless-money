@@ -1,4 +1,4 @@
-# Borderless Money — full backend (LangGraph + PyG risk model + RAG)
+# xPay — full backend (LangGraph + PyG risk model + RAG)
 FROM python:3.12-slim
 
 WORKDIR /app

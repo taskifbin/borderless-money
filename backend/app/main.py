@@ -1,4 +1,4 @@
-"""Borderless Money — B2B Remittance-as-a-Service API (FastAPI).
+"""xPay — B2B Remittance-as-a-Service API (FastAPI).
 
 Endpoints (contracts in docs/api-contracts.md):
   GET  /api/health
@@ -12,7 +12,7 @@ Endpoints (contracts in docs/api-contracts.md):
   GET  /metrics
 
 Cross-cutting: X-Request-ID on every response, per-IP rate limiting on /api/*,
-optional API-key enforcement (BORDERLESS_MONEY_API_KEY), structured errors.
+optional API-key enforcement (XPAY_API_KEY), structured errors.
 """
 import os
 import time
@@ -31,7 +31,7 @@ from app.services import compliance, gnn_risk, horizon, intent_parser, llm, metr
 from app.services import corridor as corridor_cfg
 
 app = FastAPI(
-    title="Borderless Money",
+    title="xPay API",
     description="Remittance intelligence that maximizes the money that actually arrives. UAE (AED) → Bangladesh (BDT).",
     version="0.2.0",
 )
@@ -60,7 +60,7 @@ async def request_id_middleware(request: Request, call_next):
     return response
 
 
-_RATE_LIMIT = os.environ.get("BORDERLESS_MONEY_RATE_LIMIT", "240/minute")
+_RATE_LIMIT = os.environ.get("XPAY_RATE_LIMIT", "240/minute")
 try:
     _parts = _RATE_LIMIT.split("/")
     _RATE_MAX = int(_parts[0])
@@ -98,11 +98,11 @@ async def rate_limit_middleware(request: Request, call_next):
 
 # --- Optional API-key enforcement -------------------------------------------
 # Off by default so the demo and judges' curl run with zero setup. Setting
-# BORDERLESS_MONEY_API_KEY switches every private endpoint to require
+# XPAY_API_KEY switches every private endpoint to require
 # X-API-Key; health/readiness/metrics stay open for operations.
 
 def _require_api_key(x_api_key: str | None = Header(None, alias="X-API-Key")) -> None:
-    expected = os.environ.get("BORDERLESS_MONEY_API_KEY")
+    expected = os.environ.get("XPAY_API_KEY")
     if expected and x_api_key != expected:
         raise HTTPException(status_code=401, detail="Missing or invalid X-API-Key header")
 

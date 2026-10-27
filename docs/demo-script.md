@@ -1,4 +1,4 @@
-# Borderless Money — 3-Minute Video Script (rubric-aligned cut)
+# xPay — 3-Minute Video Script (rubric-aligned cut)
 
 Mapped to the six published judging criteria (Innovation, Technical Execution, Business Model, Impact + Ethical AI, Scalability + NRB, Presentation). All numbers below are the system's actual measured outputs — verify with `python3 backend/run_demo.py` and `GET /metrics` before recording. **3:00 hard cap.**
 
@@ -22,7 +22,7 @@ Open with a stat, not a logo.
 
 ## 0:30–1:00 · Solution & differentiation
 
-> "Borderless Money is a **net-receive router**. One sentence in Bangla, English, or Arabic. We compare every rail and show the exact taka that arrives — fees out, government bonus in."
+> "xPay is a **net-receive router**. One sentence in Bangla, English, or Arabic. We compare every rail and show the exact taka that arrives — fees out, government bonus in."
 
 *(Screen: quote screen. Point at: They receive ৳33,488.80 · Includes ৳820.00 government bonus. One line only:)*
 
@@ -50,7 +50,7 @@ Four layers, thirty seconds:
 
 ## 2:30–3:00 · Impact numbers + next step
 
-> "Measured today: **+3.26% more money arrives**, sub-3-second quotes, zero false holds, full screening recall. Next: a pilot with one UAE exchange partner, three corridors — UAE, KSA, Malaysia to Bangladesh — and a **Remittance-as-a-Service API** for bKash and Nagad partners, at a 0.2–0.5% take rate. Ten thousand senders in six months. FinSphere AI track — **Borderless Money. Built in Dhaka, for the world.**"
+> "Measured today: **+3.26% more money arrives**, sub-3-second quotes, zero false holds, full screening recall. Next: a pilot with one UAE exchange partner, three corridors — UAE, KSA, Malaysia to Bangladesh — and a **Remittance-as-a-Service API** for bKash and Nagad partners, at a 0.2–0.5% take rate. Ten thousand senders in six months. FinSphere AI track — **xPay. Built in Dhaka, for the world.**"
 
 *(Screen: `/metrics` JSON or the KPI table. End on it.)*
 

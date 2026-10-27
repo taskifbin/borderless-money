@@ -1,4 +1,4 @@
-# Borderless Money frontend refresh
+# xPay frontend refresh
 
 ## Implementation
 

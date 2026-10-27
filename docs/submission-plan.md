@@ -1,4 +1,4 @@
-# Borderless Money — Submission Plan (Oct 24 → Oct 31) — v2, corrected
+# xPay — Submission Plan (Oct 24 → Oct 31) — v2, corrected
 
 Deadline: **Oct 31, 2026, 11:59 PM GMT+6** (Idea to Unicorn preliminary). **Plan: submit Oct 29** — do not wait for Oct 31. The engineering is done; the packaging is the only thing between us and the preliminary. This v2 supersedes the earlier plan: recording moved up to Oct 25–26, submission to Oct 29, and three concrete artifacts are assigned today/tomorrow (portal-requirements paragraph, unit economics, NRB outreach log).
 
@@ -17,7 +17,7 @@ Deadline: **Oct 31, 2026, 11:59 PM GMT+6** (Idea to Unicorn preliminary). **Plan
 
 Template (three sentences): one on the product, one on the ask, one on the time commitment.
 
-> "I'm building Borderless Money — an AI remittance router for the UAE→Bangladesh corridor that optimizes for the exact taka a family receives, including the government's 2.5% incentive — for the AI Builders Congress (Idea to Unicorn). Could I get 30 minutes of your time, or an advisor letter, as our NRB collaborator? Total commitment is one call now and a name on the submission."
+> "I'm building xPay — an AI remittance router for the UAE→Bangladesh corridor that optimizes for the exact taka a family receives, including the government's 2.5% incentive — for the AI Builders Congress (Idea to Unicorn). Could I get 30 minutes of your time, or an advisor letter, as our NRB collaborator? Total commitment is one call now and a name on the submission."
 
 | # | Name | Role / corridor | Channel | Sent | Replied | Outcome |
 | -- | :--- | :--- | :--- | :--- | :--- | :--- |

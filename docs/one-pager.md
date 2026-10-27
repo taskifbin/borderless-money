@@ -1,4 +1,4 @@
-# Borderless Money — One-Pager
+# xPay — One-Pager
 
 **FinSphere AI · Challenge: Borderless Money — Cross-border payments and remittance intelligence**
 **Team CTRL V** (5 members) · Idea to Unicorn · International AI Builders Congress 2026
@@ -11,7 +11,7 @@ Bangladesh received **$35.56 billion** in remittances in FY2025-26 — **$4.58 b
 
 ## 2. Solution & differentiator
 
-Borderless Money is a **net-receive router**: say or type the transfer in Bangla, English, or Arabic, and it ranks every viable rail by the taka that actually arrives — fees out, **government incentive in**. One sentence: *no other app optimizes for what arrives, because it is the only one that computes the 2.5% incentive into the route choice.* On AED 1,000, the recommended rail delivers **৳33,488.80 vs ৳32,432.40 over SWIFT (+3.26%)**.
+xPay is a **net-receive router**: say or type the transfer in Bangla, English, or Arabic, and it ranks every viable rail by the taka that actually arrives — fees out, **government incentive in**. One sentence: *no other app optimizes for what arrives, because it is the only one that computes the 2.5% incentive into the route choice.* On AED 1,000, the recommended rail delivers **৳33,488.80 vs ৳32,432.40 over SWIFT (+3.26%)**.
 
 ## 3. System flow
 

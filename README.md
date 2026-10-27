@@ -1,4 +1,7 @@
-# Borderless Money
+<p align="center">
+  <img src="./public/assets/xpay-logo.png" alt="xPay Logo" width="200"/>
+</p>
+<h1 align="center">xPay</h1>
 
 > **Agentic, jurisdiction-aware remittance intelligence that maximizes the money that actually arrives.**
 
@@ -13,7 +16,7 @@
 
 ## 📋 Project Overview
 
-Borderless Money is an agentic remittance orchestrator for the UAE → Bangladesh corridor. Migrant
+xPay is an agentic remittance orchestrator for the UAE → Bangladesh corridor. Migrant
 workers say *“Send 1,000 dirhams to my mother’s bKash in Dhaka”* — and a two-layer AI
 system parses the intent, scores every viable payout rail, screens the transaction
 against predictive RegTech, explains its decision in plain language, and executes on
@@ -37,7 +40,7 @@ pricing are flagged and can never win or settle.
 
 ### 🌟 The Killer Differentiator: True Net-Receive Optimization
 
-Most apps hide fees and spreads. Borderless Money calculates the **exact amount the recipient
+Most apps hide fees and spreads. xPay calculates the **exact amount the recipient
 gets** — including the **Bangladesh Bank’s official 2.5% cash incentive** for formal
 remittance (Bangladesh Bank, SME & Remittance Department circulars). Every term below is
 in BDT: fees quoted in AED are converted at the same rate before they are subtracted —
@@ -144,7 +147,7 @@ Full details: [docs/architecture.md](docs/architecture.md)
 ## 📁 Repository Layout
 
 ```text
-borderless-money/
+xpay/
 ├── README.md                  ← you are here (project overview)
 ├── docs/
 │   ├── architecture.md        ← layers, data flow, real-vs-simulated
@@ -211,8 +214,8 @@ The backend image installs the **full** stack (LangGraph, PyG risk model,
 embeddings) from `backend/requirements-full.txt`. Just the backend image:
 
 ```bash
-docker build -t borderless-money-backend -f backend/Dockerfile backend
-docker run -p 8000:8000 borderless-money-backend
+docker build -t xpay-backend -f backend/Dockerfile backend
+docker run -p 8000:8000 xpay-backend
 ```
 
 Verified: the image builds, boots in ~10 s, and serves the exact demo numbers
@@ -274,7 +277,7 @@ Pass `demo_scenario` in `POST /api/agent/execute`, or pick it in the UI.
 | `GET` | `/metrics` | Measured KPIs (computed from in-repo eval sets — never invented) |
 
 Cross-cutting: `X-Request-ID` on every response · per-IP rate limiting on `/api/*`
-(ops probes exempt) · optional API-key enforcement (`BORDERLESS_MONEY_API_KEY`).
+(ops probes exempt) · optional API-key enforcement (`XPAY_API_KEY`).
 Full request/response JSON: [docs/api-contracts.md](docs/api-contracts.md)
 
 ---
@@ -389,7 +392,7 @@ responsible-AI limits ([SECURITY_AND_RESPONSIBLE_AI](docs/SECURITY_AND_RESPONSIB
 
 ### ⚠️ Disclaimer
 
-Borderless Money is a hackathon prototype. Quotes are simulated snapshots, blockchain settlement
+xPay is a hackathon prototype. Quotes are simulated snapshots, blockchain settlement
 runs on the **Stellar testnet**, and payout rails are mocked. It is not a licensed
 money-services business — yet. PII stays off-chain; only hashes and non-identifying
 audit data touch the ledger.

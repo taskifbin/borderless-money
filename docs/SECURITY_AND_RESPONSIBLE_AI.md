@@ -8,7 +8,7 @@ compliance — this is a hackathon-grade prototype with honest boundaries.**
 
 | Threat | Vector | Safeguard in this repo | Residual risk |
 | :--- | :--- | :--- | :--- |
-| Spoofed caller | Unauthorized execute/quote | Optional API key (`BORDERLESS_MONEY_API_KEY` → `X-API-Key` required on private endpoints); no auth by default because the demo must run zero-setup — **documented, deliberate** | Default-open deployment is a footgun for production; add real authN (OIDC/mtls) before any real data |
+| Spoofed caller | Unauthorized execute/quote | Optional API key (`XPAY_API_KEY` → `X-API-Key` required on private endpoints); no auth by default because the demo must run zero-setup — **documented, deliberate** | Default-open deployment is a footgun for production; add real authN (OIDC/mtls) before any real data |
 | Duplicate settlement | Retry storms / double-click | `Idempotency-Key` (first response wins, replays labeled); quotes single-use (`quote_already_used`) | Idempotency store is in-memory/SQLite per process — multi-node needs shared store |
 | Stale pricing | Executing an expired quote | Quote TTL + revalidation gate; `quote_expired` refusal (scenario C) | Clock skew across nodes untested |
 | Rate abuse / DoS | API flooding | Per-IP fixed-window limiter (default 240/min, `/api/health`+`/api/ready` exempt), structured 429 | In-memory limiter resets on restart; no global (multi-IP) quota |

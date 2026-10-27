@@ -1,4 +1,4 @@
-# Borderless Money — KPI Definitions & Measured Values
+# xPay — KPI Definitions & Measured Values
 
 Every number below is **computed from this repository** — corridor math, eval sets, or timed runs. `GET /metrics` returns these values (computed once per process, cached). Curated-benchmark numbers are labeled as such and must never be presented as production statistics. **All targets are internal targets**, not external benchmarks — the one external comparison sits in "Public baseline" below.
 
@@ -15,7 +15,7 @@ Every number below is **computed from this repository** — corridor math, eval 
 The World Bank's **Remittance Prices Worldwide** publication tracks the global
 average cost of sending $200 — roughly **6%+ of principal in recent releases**
 (verify the exact current figure at remittanceprices.worldbank.org before
-quoting on camera). Borderless Money's measured +3.26% net-receive uplift versus
+quoting on camera). xPay's measured +3.26% net-receive uplift versus
 the SWIFT baseline, plus the surfaced 2.5% incentive, is best expressed against
 that external number: **the total effective cost to the family drops by roughly
 a third relative to the global average cost of remitting** — a claim about the

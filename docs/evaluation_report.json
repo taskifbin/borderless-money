@@ -1,5 +1,5 @@
 {
-  "suite": "borderless-money-scenarios",
+  "suite": "xpay-scenarios",
   "generated_at": "2026-10-24T20:32:47.106261+00:00",
   "environment": "local venv, no external network dependencies; simulated surfaces labeled per scenario",
   "totals": {

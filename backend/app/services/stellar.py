@@ -13,11 +13,11 @@ import uuid
 
 
 def _memo(tx_seed: str) -> str:
-    return "BM-" + hashlib.sha256(tx_seed.encode()).hexdigest()[:8].upper()
+    return "XPAY-" + hashlib.sha256(tx_seed.encode()).hexdigest()[:8].upper()
 
 
 def _simulated_hash(tx_seed: str) -> str:
-    return hashlib.sha256(("borderless-money:" + tx_seed).encode()).hexdigest()
+    return hashlib.sha256(("xpay:" + tx_seed).encode()).hexdigest()
 
 
 def simulate_settlement(route_name: str, amount_source: float,

@@ -227,7 +227,7 @@ def scenario_h_bengali_banglish():
 
 
 def main():
-    print("=== Borderless Money — end-to-end scenario evaluation ===")
+    print("=== xPay — end-to-end scenario evaluation ===")
     print(f"started {datetime.now(timezone.utc).isoformat()}")
     a = scenario_a_successful_recommendation()
     scenario_b_better_route_appears(a)
@@ -240,7 +240,7 @@ def main():
 
     passed = sum(1 for r in RESULTS if r["pass"])
     report = {
-        "suite": "borderless-money-scenarios",
+        "suite": "xpay-scenarios",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "environment": "local venv, no external network dependencies; simulated surfaces labeled per scenario",
         "totals": {"passed": passed, "failed": len(RESULTS) - passed, "total": len(RESULTS)},

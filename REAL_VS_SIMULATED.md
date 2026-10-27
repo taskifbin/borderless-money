@@ -21,7 +21,7 @@ sprint. If a claim is not in this table, it does not exist.
 | FX rates & fees | **SIMULATED (labeled)** | static corridor snapshots with `fx_source` + `sourced_at` timestamps; no live FX feed is claimed |
 | Regulatory RAG | **REAL retrieval, excerpt corpus** | `make eval-rag` — hit@2 = 100% on the labeled set; every chunk cites org + domain; embeddings optional (MiniLM when installable, lexical fallback otherwise — engine field reports which) |
 | Regulatory sources | **SIMULATED excerpts** | corpus lines are demo excerpts referencing real organizations/domains (bb.org.bd, ofac.treasury.gov, iso20022.org) — verify against the original documents before production use |
-| LLM intent fallback | **REAL mechanism, OFF by default** | schema-validated, stub-tested (`tests/test_step3.py`); activates only with `BORDERLESS_MONEY_LLM_API_KEY`; UI + `/api/health` show the state |
+| LLM intent fallback | **REAL mechanism, OFF by default** | schema-validated, stub-tested (`tests/test_step3.py`); activates only with `XPAY_LLM_API_KEY`; UI + `/api/health` show the state |
 | Bangla/English explanations | **REAL (template)** | generated from the decision log; every number ground-checked (`tests/test_step3.py::test_number_guard_*`); LLM paraphrase rejected on any invented number |
 | Intent parsing (en/bn/ar regex) | **REAL** | 100% on the curated 49-utterance benchmark (`data/intent_eval.json`) — labeled curated, not production |
 | KPIs | **MEASURED, internally sourced** | `GET /metrics` computes from in-repo eval sets; targets are labeled internal; one external baseline (World Bank RPW) documented in `docs/kpis.md` |

@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * B2B ROI Calculator — for remittance operators evaluating the Borderless
- * Money routing API. Pure client-side; mirrors backend/app/services/roi.py
+ * B2B ROI Calculator — for remittance operators evaluating the xPay
+ * routing API. Pure client-side; mirrors backend/app/services/roi.py
  * (which has hand-computed test coverage). Every output is a MODELED ESTIMATE
  * from the user's assumptions — nothing here is measured. Recipient benefit is
  * shown separately and is NEVER counted as vendor revenue.
@@ -118,7 +118,7 @@ export default function RoiPage() {
         <div>
           <h1 className="text-2xl font-bold">B2B ROI Calculator</h1>
           <p className="text-sm text-gray-600">
-            What a remittance operator gains by routing through Borderless Money.
+            What a remittance operator gains by routing through xPay.
             Same formulas as <code className="rounded bg-gray-100 px-1">backend/app/services/roi.py</code> (unit-tested).
           </p>
         </div>

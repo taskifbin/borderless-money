@@ -1,16 +1,18 @@
-# Borderless Money — full system (backend + frontend) via `docker compose up`
+# xPay — full system (backend + frontend) via `docker compose up`
 services:
   backend:
+    container_name: xpay-backend
     build: ./backend
     ports:
       - "8000:8000"
     environment:
-      - BORDERLESS_MONEY_CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+      - XPAY_CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
       # Optional bounded-LLM assist (off unless a key is provided):
-      # - BORDERLESS_MONEY_LLM_API_KEY=${BORDERLESS_MONEY_LLM_API_KEY}
-      # - BORDERLESS_MONEY_LLM_MODEL=gpt-4o-mini
+      # - XPAY_LLM_API_KEY=${XPAY_LLM_API_KEY}
+      # - XPAY_LLM_MODEL=gpt-4o-mini
 
   frontend:
+    container_name: xpay-frontend
     image: node:20-slim
     working_dir: /app
     volumes:

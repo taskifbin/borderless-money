@@ -1,4 +1,4 @@
-# Borderless Money — 3-Minute Spoken Pitch (Dec 26, in-person round)
+# xPay — 3-Minute Spoken Pitch (Dec 26, in-person round)
 
 This is a **stand-up pitch script, not the video narration** — it must work with no screen-share (a live demo or a single slide is optional garnish, not a dependency). ~390 spoken words ≈ 3:00 at a calm pace. Rehearse twice minimum (plan: Oct 28), once with a stopwatch.
 
@@ -8,11 +8,11 @@ Delivery notes: open to the panel, not the screen. Numbers are spoken slowly. If
 
 **[0:00–0:30 · The person, the gap]**
 
-> Rahim builds scaffolding in Dubai. Every month he sends one thousand dirhams to his mother's bKash in Dhaka. His exchange house takes fifteen dirhams in fees, hides a worse rate in the spread — and nobody tells his mother she is entitled to the government's two-and-a-half percent cash incentive for formal remittance. Multiply that gap across [verified Bangladesh Bank figure] a year, and you have the problem we built Borderless Money to solve: money goes missing between two honest people and a regulation nobody surfaced for them.
+> Rahim builds scaffolding in Dubai. Every month he sends one thousand dirhams to his mother's bKash in Dhaka. His exchange house takes fifteen dirhams in fees, hides a worse rate in the spread — and nobody tells his mother she is entitled to the government's two-and-a-half percent cash incentive for formal remittance. Multiply that gap across [verified Bangladesh Bank figure] a year, and you have the problem we built xPay to solve: money goes missing between two honest people and a regulation nobody surfaced for them.
 
 **[0:30–1:00 · Solution & differentiation]**
 
-> Borderless Money is a net-receive router. One sentence — in Bangla, English, or Arabic — and it compares every rail on the exact taka that arrives: fees out, government incentive in. On a thousand dirhams, our recommended rail delivers 33,488 taka where SWIFT delivers 32,432 — 1,056 taka more, in two hours instead of twenty-eight. The differentiator is not a prettier rate table. We are the only ones who compute the 2.5 percent incentive into the route choice itself.
+> xPay is a net-receive router. One sentence — in Bangla, English, or Arabic — and it compares every rail on the exact taka that arrives: fees out, government incentive in. On a thousand dirhams, our recommended rail delivers 33,488 taka where SWIFT delivers 32,432 — 1,056 taka more, in two hours instead of twenty-eight. The differentiator is not a prettier rate table. We are the only ones who compute the 2.5 percent incentive into the route choice itself.
 
 **[1:00–2:00 · Live flow]**
 
@@ -24,7 +24,7 @@ Delivery notes: open to the panel, not the screen. Numbers are spoken slowly. If
 
 **[2:30–3:00 · Business & close]**
 
-> And the business: senders pay a flat two dirhams — a fifth of incumbent fees. Exchange-house partners pay 0.15 percent of principal for the routing and compliance API. At ten thousand senders, that is roughly sixty-five thousand dirhams of monthly gross margin, with an eight-dirham acquisition cost paid back in weeks. Next: a pilot with one UAE exchange partner, then KSA and Malaysia, then Remittance-as-a-Service for the wallet providers. FinSphere AI track — Borderless Money. Built in Dhaka, for the world.
+> And the business: senders pay a flat two dirhams — a fifth of incumbent fees. Exchange-house partners pay 0.15 percent of principal for the routing and compliance API. At ten thousand senders, that is roughly sixty-five thousand dirhams of monthly gross margin, with an eight-dirham acquisition cost paid back in weeks. Next: a pilot with one UAE exchange partner, then KSA and Malaysia, then Remittance-as-a-Service for the wallet providers. FinSphere AI track — xPay. Built in Dhaka, for the world.
 
 ---
 
