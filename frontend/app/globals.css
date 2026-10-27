@@ -2,6 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --ink: #111827;
+  --ink-soft: #526071;
+  --navy: #0d1724;
+  --navy-2: #172536;
+  --sand: #f7f4ec;
+  --paper: #fffdf8;
+  --line: #e8e2d7;
+  --saffron: #f4b942;
+  --emerald: #19a77a;
+}
+
+@layer base {
+  * { box-sizing: border-box; }
+  html { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  body { margin: 0; background: var(--sand); color: var(--ink); font-size: 16px; line-height: 1.5; }
+  button, input { font: inherit; }
+  button { cursor: pointer; }
+  ::selection { background: rgba(244, 185, 66, .35); }
+}
+
+@layer components {
+  .bm-shell { min-height: 100vh; background: radial-gradient(circle at 75% 0%, rgba(244,185,66,.08), transparent 26rem), var(--sand); }
+  .bm-card { border: 1px solid rgba(232,226,215,.95); border-radius: 24px; background: rgba(255,253,248,.9); box-shadow: 0 20px 50px rgba(23,37,54,.06); }
+  .bm-eyebrow { color: #8a6b35; font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+  .bm-mono { font-variant-numeric: tabular-nums; }
+  .bm-dashed { border-top: 1px dashed #d9d0c0; }
+  .bm-glow { box-shadow: 0 0 0 5px rgba(244,185,66,.15), 0 14px 32px rgba(244,185,66,.18); }
+  .bm-fade-up { animation: fade-up .45s ease-out both; }
+  .bm-fade-up:nth-child(2) { animation-delay: .06s; }
+  .bm-fade-up:nth-child(3) { animation-delay: .12s; }
+}
+
+@keyframes fade-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .bm-fade-up { animation: none; } }
+
 @layer base {
   html {
     font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
