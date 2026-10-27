@@ -1,0 +1,48 @@
+{
+  "suite": "xpay-simulation-1000",
+  "n_transfers": 1000,
+  "seed": 42,
+  "synthetic_assumptions": {
+    "amount_aed": "lognormal(mu=6.8, sigma=0.55), clipped to [200, 5000], rounded to whole AED",
+    "payout_mix": {
+      "BKASH": 0.6,
+      "NAGAD": 0.25,
+      "BANK": 0.15
+    },
+    "note": "amounts and payout mix are synthetic assumptions, not field data; the PRICING is the real engine"
+  },
+  "mean_net_receive_bdt": {
+    "current_channel_legacy_swift": 35112.68,
+    "xpay_ev_ranking": 36130.55,
+    "fee_only_ranking": 35655.55,
+    "cost_only_ranking": 35655.55
+  },
+  "uplift_vs_current_channel": {
+    "xpay_ev_ranking": {
+      "mean_pct": 3.53,
+      "median_pct": 3.16,
+      "min_pct": 1.57,
+      "max_pct": 11.08
+    },
+    "fee_only_ranking_if_it_were_used": {
+      "mean_pct": 2.26,
+      "median_pct": 1.84,
+      "min_pct": 0.07,
+      "max_pct": 10.66
+    },
+    "cost_only_ranking_if_it_were_used": {
+      "mean_pct": 2.26,
+      "median_pct": 1.84,
+      "min_pct": 0.07,
+      "max_pct": 10.66
+    }
+  },
+  "share_of_transfers_where_ranking_differs": {
+    "xpay_ev_vs_fee_only": 1.0,
+    "xpay_ev_vs_cost_only": 1.0
+  },
+  "interpretation": {
+    "ranking_differs_1.0": "fee-only and cost-only both always pick the incentive-ineligible promo rail (lowest fee / lowest cost), so on this corridor config they disagree with incentive-aware EV ranking on every transfer \u2014 that disagreement IS the product",
+    "uplift_gap": "mean uplift difference between xPay EV ranking and fee-only = the BDT value of computing the 2.5% incentive into the route choice"
+  }
+}
