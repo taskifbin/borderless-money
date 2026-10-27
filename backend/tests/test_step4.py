@@ -42,16 +42,16 @@ class TestIncentiveEligibility(unittest.TestCase):
         baseline = routing_scorer.naive_baseline(self.routes)
         self.assertIn("Cash Pickup", baseline["name"])
         best = self.routes[0]
-        self.assertLess(baseline["expected_value_bdt"], best["expected_value_bdt"])
+        self.assertLess(baseline["reliability_adjusted_net"], best["reliability_adjusted_net"])
 
 
 class TestEVRanking(unittest.TestCase):
-    def test_ranked_by_expected_value(self):
+    def test_ranked_by_reliability_adjusted_net(self):
         routes = routing_scorer.score_routes(1000, "BKASH")
-        evs = [r["expected_value_bdt"] for r in routes]
+        evs = [r["reliability_adjusted_net"] for r in routes]
         self.assertEqual(evs, sorted(evs, reverse=True))
         self.assertTrue(routes[0]["is_best"])
-        self.assertIn("expected value", routes[0]["ranking_rationale"])
+        self.assertIn("reliability-adjusted net", routes[0]["ranking_rationale"])
 
     def test_deadline_filters(self):
         routes = routing_scorer.score_routes(1000, "BKASH", deadline_hours=3)

@@ -138,7 +138,7 @@ class TestEligibilityAndRanking(unittest.TestCase):
         broken = next(r for r in routes if "Stellar Hybrid" in r["rail"])
         self.assertFalse(broken["eligibility"]["eligible"])
         self.assertEqual(broken["eligibility"]["reason"], "missing_fee_data")
-        self.assertIsNone(broken["expected_value_bdt"])
+        self.assertIsNone(broken["reliability_adjusted_net"])
         self.assertFalse(broken["is_best"], "an unpriced route must never win")
 
     def test_ineligible_or_unpriced_never_wins_property(self):
@@ -153,8 +153,8 @@ class TestEligibilityAndRanking(unittest.TestCase):
             self.assertTrue(eligible)
             self.assertTrue(best["eligibility"]["eligible"], amount)
             self.assertEqual(
-                Decimal(best["expected_value_exact"]),
-                max(Decimal(r["expected_value_exact"]) for r in eligible),
+                Decimal(best["reliability_adjusted_net_exact"]),
+                max(Decimal(r["reliability_adjusted_net_exact"]) for r in eligible),
                 f"amount={amount}: winner must be the max-EV eligible route")
 
     def test_identical_candidates_keep_stable_config_order(self):

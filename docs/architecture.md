@@ -70,13 +70,13 @@ Every rail, FX rate, fee, and last-mile rule lives in the corridor config
 - Rails (UAE→BD): `Traditional SWIFT`, `Stellar Hybrid Anchor`, `Exchange House
   MTO`, `Stellar Multi-hop (AED-USD-BDT)`, and a `Cash Pickup Agent (teaser
   rate)` sample that is **incentive-ineligible** — it wins on raw numbers and
-  loses once the 2.5% incentive and expected value are applied, demonstrating
+  loses once the 2.5% incentive and reliability-adjusted net are applied, demonstrating
   the eligibility flag as real routing logic
 - Payout legs: `bkash`, `nagad`, `bank` (each rail pays a different last-mile
   partner fee — SWIFT reaching bKash is the expensive case)
 - Each route is priced end-to-end (rail fee/FX/hours + last-mile leg), the
   incentive applies **only to eligible rails**, and routes are ranked by
-  **expected value (true net × success rate)**; a naive cheapest-fee baseline is
+  **reliability-adjusted net (true net × success rate — failures modeled as total loss, an honest demo limit)**; a naive cheapest-fee baseline is
   exposed in `/api/routes/compare` alongside the winner, with FX `as_of`
   timestamps and a live Horizon reachability probe in `data_sources`.
 

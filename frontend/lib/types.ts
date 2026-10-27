@@ -51,7 +51,7 @@ export interface RouteOption {
   is_best: boolean;
   advantage_bdt_vs_best: number | null;
   incentive_eligible: boolean;
-  expected_value_bdt: number | null;
+  reliability_adjusted_net: number | null;
   pricing_completeness: "complete" | "incomplete";
   eligibility: { eligible: boolean; reason: string | null; note: string | null };
   breakdown: Breakdown;

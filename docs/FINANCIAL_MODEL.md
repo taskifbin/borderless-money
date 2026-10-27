@@ -25,7 +25,7 @@ document disagree, that is a bug — file it.
   Banker's rounding is never used for displayed amounts.
 - Every API response carries exact decimal strings alongside display floats:
   `breakdown.true_net_receive_exact`, `gross_exact`, `fees_deducted_exact`,
-  `govt_incentive_exact`, and route-level `expected_value_exact`. **The string
+  `govt_incentive_exact`, and route-level `reliability_adjusted_net_exact`. **The string
   is the authoritative value; the float is presentation.**
 
 ## 3. True Net Receive — the formula
@@ -72,9 +72,18 @@ A route whose fee is absent (`fee_source: null` in corridor config) is:
 
 ## 5. Eligibility before optimization
 
-Ranking order: (1) mark eligibility; (2) rank **eligible** routes by expected
-value `EV = true_net × success_rate` (rounded half-up 2dp); (3) append
-ineligible/unpriced routes; (4) `is_best` only on the top eligible route.
+Ranking order: (1) mark eligibility; (2) rank **eligible** routes by
+`reliability_adjusted_net = true_net × success_rate` (rounded half-up 2dp);
+(3) append ineligible/unpriced routes; (4) `is_best` only on the top eligible
+route.
+
+**Why the name changed (failure-model honesty):** `true_net × success_rate` is
+the net the recipient expects ON AVERAGE across identical transfers — it is NOT
+an "expected value" in the settlement sense, because it models a failed
+transfer as a **total loss** (no refund of principal, no retry fee, no delay
+penalty). The field is named `reliability_adjusted_net` so the metric's
+definition travels with it; a real failure model (refund minus retry fee plus
+delay) is future work and would change the ranking, not just the name.
 
 Hard eligibility inputs today: complete pricing, deadline feasibility (a
 deadline that excludes all priced routes raises `ValueError`), corridor/payout

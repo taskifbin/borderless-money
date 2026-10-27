@@ -49,7 +49,7 @@ class TestRoutingScorer(unittest.TestCase):
     def test_ranking_and_flags(self):
         routes = routing_scorer.score_routes(1000, "BKASH")
         self.assertEqual(len(routes), 5)
-        evs = [r["expected_value_bdt"] for r in routes]
+        evs = [r["reliability_adjusted_net"] for r in routes]
         self.assertEqual(evs, sorted(evs, reverse=True))
         self.assertTrue(routes[0]["is_best"])
         self.assertEqual(routes[0]["name"], "Stellar Hybrid Anchor → BKASH")

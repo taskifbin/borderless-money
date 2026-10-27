@@ -105,7 +105,7 @@ def scenario_b_better_route_appears(a_state):
     ok = before_best == "Stellar Hybrid Anchor → BKASH" and after_best == "Exchange House MTO → BKASH"
     record("B", "fee/FX change flips the recommendation to the new optimal route",
            f"winner changes {before_best} → Exchange House MTO → BKASH",
-           f"before={before_best}, after={after_best} (EV={routes[0]['expected_value_bdt']})",
+           f"before={before_best}, after={after_best} (EV={routes[0]['reliability_adjusted_net']})",
            ok, data_type="mutated-fixture + deterministic-engine")
 
 
@@ -148,7 +148,7 @@ def scenario_e_provider_data_failure():
     broken = next(r for r in routes if "Stellar Hybrid" in r["rail"])
     ok = (broken["eligibility"] == {"eligible": False, "reason": "missing_fee_data",
                                     "note": broken["eligibility"]["note"]}
-          and broken["expected_value_bdt"] is None
+          and broken["reliability_adjusted_net"] is None
           and broken["breakdown"]["true_net_receive_bdt"] is None
           and not broken["is_best"]
           and routes[0]["rail"] != "Stellar Hybrid Anchor")

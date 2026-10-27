@@ -258,7 +258,7 @@ def compare_routes(amount: float = 1000.0, payout_method: str = "BKASH",
             "strategy": "naive cheapest-fee",
             "name": baseline["name"] if baseline else None,
             "fee_total_source": baseline["fee_total_source"] if baseline else None,
-            "expected_value_bdt": baseline["expected_value_bdt"] if baseline else None,
+            "reliability_adjusted_net": baseline["reliability_adjusted_net"] if baseline else None,
             "incentive_eligible": baseline["incentive_eligible"] if baseline else None,
         },
         "data_sources": {

@@ -148,7 +148,7 @@ No money moves.
 }
 ```
 
-`routes` is sorted best-first by expected value (`true_net × success_rate`).
+`routes` is sorted best-first by `reliability_adjusted_net` (`true_net × success_rate`) — the net the recipient expects on average across identical transfers. Failures are modeled as total loss (no refund/retry in this demo); the name says reliability-adjusted, not expected value, on purpose.
 `advantage_bdt_vs_best` is how many BDT *less* this route delivers than the winner
 (0 for the winner; `null` for routes flagged ineligible).
 
@@ -157,8 +157,8 @@ No money moves.
 ```json
 {
   "incentive_eligible": true,
-  "expected_value_bdt": 32819.02,
-  "expected_value_exact": "32819.02",
+  "reliability_adjusted_net": 32819.02,
+  "reliability_adjusted_net_exact": "32819.02",
   "eligibility": {"eligible": true, "reason": null, "note": null},
   "pricing_completeness": "complete",
   "missing_fields": []
@@ -166,7 +166,7 @@ No money moves.
 ```
 
 A route with missing fee data returns `eligibility.eligible: false, reason:
-"missing_fee_data"`, `fee_total_source/expected_value_bdt/breakdown.true_net_receive_bdt`
+"missing_fee_data"`, `fee_total_source/reliability_adjusted_net/breakdown.true_net_receive_bdt`
 all `null` (never silently zero), is ranked last and can never be `is_best`.
 
 **Quote artifact (quote + execute responses):**

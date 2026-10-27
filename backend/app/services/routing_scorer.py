@@ -4,7 +4,9 @@ Corridor-agnostic: every rail, FX rate, fee and last-mile rule comes from the
 corridor config (backend/config/corridors/<code>.json). Each rail is priced
 end-to-end — rail fee/FX/hours plus the last-mile payout leg — the 2.5%
 government incentive is applied ONLY to incentive-eligible rails, and routes
-are ranked by expected value (true net x success rate). A naive
+are ranked by reliability-adjusted net (true net x success rate — the net
+expected ON AVERAGE across identical transfers; failures are modeled as
+total loss, no refund/retry is modeled in this demo). A naive
 cheapest-fee baseline is exposed alongside so the ranking's value is
 measurable, not asserted.
 
@@ -37,7 +39,7 @@ def score_routes(amount_source, payout_method: str = "BKASH",
                  deadline_hours: float | None = None) -> list[dict]:
     """Enumerate corridor paths, price each with True Net Receive (the 2.5%
     incentive applied ONLY to incentive-eligible rails), mark eligibility,
-    rank by expected value (true net x success rate), best-first."""
+    rank by reliability-adjusted net (true net x success rate), best-first."""
     corridor = corridor_cfg.load_corridor(corridor_code)
     payout_method = (payout_method or corridor["default_payout"]).upper()
     mid = corridor["mid_market_rate"]
@@ -87,8 +89,8 @@ def score_routes(amount_source, payout_method: str = "BKASH",
             "settlement_time_hrs": hours,
             "success_rate": float(success.quantize(_SUCCESS_PRECISION, rounding=ROUND_HALF_UP)),
             "incentive_eligible": eligible,
-            "expected_value_bdt": to_number(ev) if ev is not None else None,
-            "expected_value_exact": str(ev) if ev is not None else None,
+            "reliability_adjusted_net": to_number(ev) if ev is not None else None,
+            "reliability_adjusted_net_exact": str(ev) if ev is not None else None,
             "eligibility": {
                 "eligible": pricing_ok,
                 "reason": None if pricing_ok else "missing_fee_data",
@@ -97,7 +99,7 @@ def score_routes(amount_source, payout_method: str = "BKASH",
             },
             "pricing_completeness": "complete" if pricing_ok else "incomplete",
             "missing_fields": priced["missing"],
-            "ranking_rationale": ("ranked by expected value = true net x success rate; "
+            "ranking_rationale": ("ranked by reliability-adjusted net = true net x success rate; "
                                   "the 2.5% incentive applies only to incentive-eligible rails"),
             "is_best": False,
             "advantage_bdt_vs_best": None,
@@ -114,29 +116,29 @@ def score_routes(amount_source, payout_method: str = "BKASH",
 
     if deadline_hours is not None:
         scored = [r for r in scored if r["settlement_time_hrs"] <= deadline_hours]
-        if not any(r["expected_value_bdt"] is not None for r in scored):
+        if not any(r["reliability_adjusted_net"] is not None for r in scored):
             raise ValueError(f"No route arrives within {deadline_hours}h for '{payout_method}'")
 
-    complete = [r for r in scored if r["expected_value_bdt"] is not None]
-    incomplete = [r for r in scored if r["expected_value_bdt"] is None]
+    complete = [r for r in scored if r["reliability_adjusted_net"] is not None]
+    incomplete = [r for r in scored if r["reliability_adjusted_net"] is None]
     # Stable sort: identical candidates keep config order (deterministic output).
-    complete.sort(key=lambda r: D(r["expected_value_exact"]), reverse=True)
+    complete.sort(key=lambda r: D(r["reliability_adjusted_net_exact"]), reverse=True)
     ranked = complete + incomplete
 
     if complete:
-        best_ev = D(complete[0]["expected_value_exact"])
+        best_ev = D(complete[0]["reliability_adjusted_net_exact"])
         for i, route in enumerate(ranked):
             route["is_best"] = i == 0
-            if route["expected_value_exact"] is not None:
+            if route["reliability_adjusted_net_exact"] is not None:
                 route["advantage_bdt_vs_best"] = to_number(
-                    quantize(best_ev - D(route["expected_value_exact"]), dest_ccy))
+                    quantize(best_ev - D(route["reliability_adjusted_net_exact"]), dest_ccy))
     return ranked
 
 
 def naive_baseline(routes: list[dict]) -> dict | None:
     """The route a fee-only comparison would pick — the baseline the expected-
     value ranking is measured against. Routes with unknown fees cannot play."""
-    priced = [r for r in routes if r["fee_total_source"] is not None and r["expected_value_bdt"] is not None]
+    priced = [r for r in routes if r["fee_total_source"] is not None and r["reliability_adjusted_net"] is not None]
     if not priced:
         return None
-    return min(priced, key=lambda r: (r["fee_total_source"], -r["expected_value_bdt"]))
+    return min(priced, key=lambda r: (r["fee_total_source"], -r["reliability_adjusted_net"]))
