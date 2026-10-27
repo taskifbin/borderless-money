@@ -138,9 +138,7 @@ def _engine_flags() -> dict:
 
     return {
         "langgraph": importlib.util.find_spec("langgraph") is not None,
-        "networkx": importlib.util.find_spec("networkx") is not None,
         "torch_geometric": importlib.util.find_spec("torch_geometric") is not None,
-        "stellar_sdk": importlib.util.find_spec("stellar_sdk") is not None,
     }
 
 

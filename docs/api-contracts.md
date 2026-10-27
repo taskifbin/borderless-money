@@ -38,7 +38,7 @@ Readiness with component checks:
 {
   "status": "ok",
   "corridor": {"source": "AED", "dest": "BDT", "source_country": "UAE", "dest_country": "BD"},
-  "engines": {"langgraph": false, "networkx": false, "torch_geometric": false, "stellar_sdk": false}
+  "engines": {"langgraph": false, "torch_geometric": false}
 }
 ```
 

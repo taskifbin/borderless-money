@@ -23,7 +23,7 @@ Verified against the live event page (cloudcampbd.com/ai-builders-congress, fetc
 | **Innovation** | 20% | Non-obvious AI application; breakthrough vs incremental | True Net Receive optimization incl. the 2.5% incentive — genuinely non-obvious, locally grounded |
 | **Technical Execution** | 20% | Architecture, AI integration depth — **"LLMs, ML, RAG, multimodal"** named explicitly — robustness, **explainability of the intelligence core** | LangGraph orchestrator over deterministic tools, trained GNN (AUC 0.90, **synthetic** benchmark — prototype evidence, class-error analysis + baselines published) + stand-in default, **RAG over Bangladesh Bank/OFAC corpus with `regulatory_basis` citations**, OFAC fuzzy + human review, ISO 20022 |
 | **Business Model + Global Readiness** | 20% | Monetization, adoption pathway, cross-border viability | B2B RaaS API, take-rate hypothesis, **config-driven corridors (uae_bd + ksa_bd prove multi-corridor without code changes)** |
-| **Real-World Impact + Ethical AI Compliance** | 20% | **"Measurable outcomes or KPIs"**, responsible data, bias mitigation, transparency | **`GET /metrics` returns five measured KPIs** (computed from in-repo eval sets); holds-not-blocks compliance; PII off-chain; honesty labels |
+| **Real-World Impact + Ethical AI Compliance** | 20% | **"Measurable outcomes or KPIs"**, responsible data, bias mitigation, transparency | **`GET /metrics` returns five measured KPIs** (computed from in-repo eval sets); near-matches held for review, exact list hits blocked; PII off-chain; honesty labels |
 | **Scalability + NRB Collaboration** | 10% | Cloud readiness, modular design, **NRB/global collaboration** | Corridor abstraction, containerizable, hosted URL planned; **NRB advisor = the one open gap** |
 | **Presentation** | 10% | Storytelling, demo effectiveness, explaining AI decisions | Reasoning surfaced in product copy; 5-segment video script (docs/demo-script.md) |
 
@@ -42,7 +42,7 @@ Verified against the live event page (cloudcampbd.com/ai-builders-congress, fetc
 | Differentiation | Strong | State it in one sentence, not a formula |
 | Business potential | Weak→Medium | One-pager economics section (docs/one-pager.md); rehearse the take-rate answer |
 | Global scalability | **Strong** | ksa_bd stub + `/api/health` lists corridors — show it for 3 seconds in the video |
-| Responsible AI | **Strong** | Holds-not-blocks + audit hash + citations; put it in the video at 1:30–2:00 |
+| Responsible AI | **Strong** | Near-match hold-for-review (exact hits blocked) + audit hash + citations; put it in the video at 1:30–2:00 |
 | **NRB collaborator** | **Open** | Outreach this week; the rubric awards it inside the 10% Scalability criterion |
 | "Mocked GNN" flank | **Closed** | Trained GCN shipped with honest eval (docs/kpis.md); stand-in still the safe default |
 

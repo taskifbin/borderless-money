@@ -98,12 +98,12 @@ and the receipt shows exactly why, line by line.
 │  📊 Routing Scorer (rail pricing: EV ranking + incentive gate)   │
 │  🛡️ Predictive RegTech (GNN risk scoring, PyTorch Geometric)     │
 │  ⚖️ Compliance Gate (OFAC fuzzy matching + ISO 20022 mapping)    │
-│  💱 FX & Incentive Calc (real-time rate + 2.5% BD Govt incentive)│
+│  💱 FX & Incentive Calc (snapshot rate + 2.5% BD Govt incentive) │
 └─────────────────────────────────────────────────────────────────┘
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                   DATA & INTEGRATION LAYER                       │
-│  ⛓️ Stellar Horizon (Testnet) │ 🔗 FX feeds │ 📜 OFAC (local)    │
+│  ⛓️ Horizon testnet probe     │ 🔗 FX feeds │ 📜 OFAC (local)    │
 │  🏦 bKash/Nagad mock payout │ 🗄️ PostgreSQL schema + demo store │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -125,7 +125,7 @@ flowchart TB
     A --> V["Revalidate quote and compliance"]
     V --> X{"Settlement adapter"}
     X --> F["Fiat provider or clearly labeled simulation"]
-    X --> S["Stellar Testnet demonstration"]
+    X --> S["Simulated settlement (testnet-ready)"]
     F --> L["Transfer status and audit log"]
     S --> L
     L --> O["Receipt, metrics and monitoring"]
@@ -254,7 +254,7 @@ always available.
 
 | Scenario | What it shows |
 | :--- | :--- |
-| `default` | Happy path: voice intent → routing with 2.5% incentive → CLEAR compliance → testnet execution → receipt |
+| `default` | Happy path: voice intent → routing with 2.5% incentive → CLEAR compliance → simulated settlement (clearly labeled) → receipt |
 | `fuzzy_review` | OFAC near-match (`Nasir Uddin Chowdhury` ≈ `Nasir Uddin Chaudhury`) → held for human review with a plain-language explanation |
 | `high_risk` | GNN flags a high-risk graph pattern (new device + new recipient + abnormal amount) → manual review |
 
@@ -290,9 +290,9 @@ Full request/response JSON: [docs/api-contracts.md](docs/api-contracts.md)
 | :--- | ---: | :--- |
 | Net-receive uplift vs SWIFT | **+3.26%** | corridor math, AED 1,000 (৳33,488.80 vs ৳32,432.40) |
 | Intent accuracy (en/bn/ar) | **100%** | 49-utterance curated benchmark (`data/intent_eval.json`) |
-| p95 quote latency (engine) | **~1.3 ms** | 20 timed end-to-end quote runs |
-| Compliance false-positive hold rate | **0.0%** | 10 labeled clear names (`data/compliance_eval.json`) |
-| OFAC screening recall | **100%** | 10 labeled true positives (exact + ≥85% fuzzy) |
+| p95 quote latency (engine) | **~2–3 ms** | 20 timed in-process quote runs — live value at `GET /metrics` |
+| Compliance false-positive hold rate | **0.0%** | 21 labeled clear names (`data/sanctions_eval.json`) |
+| OFAC screening recall | **100%** | 14 labeled true positives, exact after normalization (`data/sanctions_eval.json`) |
 
 Definitions & honesty notes: [docs/kpis.md](docs/kpis.md)
 
@@ -322,10 +322,10 @@ Definitions & honesty notes: [docs/kpis.md](docs/kpis.md)
 | Routing & fee/FX comparison | ✅ real engine | corridor rates are demo snapshots |
 | OFAC screening | ✅ fuzzy-matching engine | sample sanctions list (local JSON) |
 | GNN RegTech | ✅ trained PyG GCN shipped (`ml/model.pt`); held-out **synthetic** benchmark AUC 0.9038 with class-error analysis + baseline ablation published — labeled prototype evidence, not production effectiveness (at the 0.8 policy gate the trained model flags nothing: recall 0.0; a linear rule matches its AUC) | stand-in inference is the default; trained model opt-in via `USE_TRAINED_GNN=true` |
-| Stellar execution | ✅ testnet code path via `stellar-sdk` | falls back to simulated hash when SDK/keys absent |
+| Stellar execution | ✅ deterministic simulated settlement, clearly labeled (`simulated: true`, `network: "SIMULATED"`) | testnet path payment is NOT implemented — a real demo needs funded issuer/distributor + trustlines (see REAL_VS_SIMULATED.md) |
 | bKash/Nagad payout | — | mock payout registry (`data/recipients.json`) |
 
-Every simulated surface is labeled **"Simulated Quote" / "Testnet Transaction"** in the UI.
+Every simulated surface is labeled **Simulated** in the UI (the receipt's chain trail shows `network: SIMULATED`).
 The full claim-by-claim contract — including what a real Stellar testnet demo
 would require — lives in [REAL_VS_SIMULATED.md](REAL_VS_SIMULATED.md).
 
@@ -361,7 +361,7 @@ runs the full system, verified).
 | **2. RegTech & Data Lead** | Layer A GNN (PyG), OFAC fuzzy matching, ISO 20022 | Risk endpoint returning score + plain-text explanation |
 | **3. Routing & Incentive Lead** | Routing scorer (incentive eligibility, EV ranking), **2.5% incentive math**, FX logic | `calculate_true_net_receive` comparing SWIFT vs Stellar Hybrid |
 | **4. Frontend & UX Lead** | Voice UI, route comparison dashboard, receipt | Polished Next.js flow labeling the “Govt Incentive Added” line |
-| **5. Backend & Stellar Lead** | FastAPI, DB schema, testnet path payment, deployment | Unified backend + logged testnet transaction |
+| **5. Backend & Stellar Lead** | FastAPI, DB schema, settlement adapter, deployment | Unified backend + labeled simulated settlement receipt |
 
 ---
 
@@ -392,7 +392,8 @@ responsible-AI limits ([SECURITY_AND_RESPONSIBLE_AI](docs/SECURITY_AND_RESPONSIB
 
 ### ⚠️ Disclaimer
 
-xPay is a hackathon prototype. Quotes are simulated snapshots, blockchain settlement
-runs on the **Stellar testnet**, and payout rails are mocked. It is not a licensed
+xPay is a hackathon prototype. Quotes are simulated snapshots, blockchain settlement is
+**simulated by design** (testnet-ready adapter, clearly labeled — never presented as a
+real ledger transaction), and payout rails are mocked. It is not a licensed
 money-services business — yet. PII stays off-chain; only hashes and non-identifying
 audit data touch the ledger.

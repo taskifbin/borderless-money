@@ -15,14 +15,14 @@ xPay is a **net-receive router**: say or type the transfer in Bangla, English, o
 
 ## 3. System flow
 
-Voice/text → multilingual intent parser → corridor graph scorer (NetworkX: rails × payout legs, priced end-to-end) → pre-settlement risk (GNN + OFAC fuzzy screening with human review) → execution (Stellar testnet hybrid anchor; simulated hash when keys are absent, always labeled) → receipt with audit hash and ISO 20022 payload. PII stays off-chain.
+Voice/text → multilingual intent parser → corridor rail scorer (config-driven rails × payout legs, priced end-to-end) → pre-settlement risk (GNN + OFAC fuzzy screening with human review) → execution (simulated settlement, clearly labeled; testnet-ready adapter) → receipt with audit hash and ISO 20022 payload. PII stays off-chain.
 
 ## 4. AI approach
 
 - **Intent parsing:** rule-based multilingual parser (Bengali/Arabic numerals, code-switching, transliterations) — deterministic where money is involved. **Measured: 100% on a 49-utterance curated en/bn/ar benchmark.**
 - **Orchestration:** LangGraph state machine over **deterministic Python tools — the LLM never does arithmetic**, which is how we prevent hallucinated money. (Runs with an identical sequential fallback.)
-- **Routing:** corridor graph priced by the True Net Receive engine; corridors are config files (`uae_bd.json`, `ksa_bd.json`) — a new corridor is a new file, not code.
-- **Risk:** trained 2-layer GCN over transaction subgraphs (held-out **AUC 0.9038 on a labeled synthetic benchmark** — prototype evidence, not production effectiveness; `ml/eval.json` publishes the class-error analysis, and `ml/ablation.md` shows a simple linear rule matches it) + OFAC fuzzy matching (recall 100%, false-hold 0% on our labeled set) with holds-not-blocks human review.
+- **Routing:** corridor rails priced by the True Net Receive engine; corridors are config files (`uae_bd.json`, `ksa_bd.json`) — a new corridor is a new file, not code.
+- **Risk:** trained 2-layer GCN over transaction subgraphs (held-out **AUC 0.9038 on a labeled synthetic benchmark** — prototype evidence, not production effectiveness; `ml/eval.json` publishes the class-error analysis, and `ml/ablation.md` shows a simple linear rule matches it) + OFAC fuzzy matching (recall 100%, false-hold 0% on our labeled set) with near-matches held for human review (exact list hits are blocked).
 - **RAG:** regulatory corpus (Bangladesh Bank circular excerpts, OFAC FAQ, ISO 20022) grounds every decision with **cited passages** (`regulatory_basis` in the API response).
 - **Personalisation:** corridor defaults, recipient registry, language preference (persisted).
 
@@ -36,7 +36,7 @@ Full **bn UI toggle on all four screens** (persisted), Bangla voice input, and t
 | :--- | ---: | :--- |
 | Net-receive uplift vs SWIFT | **+3.26%** | ≥ 3.0% |
 | Intent accuracy (curated en/bn/ar benchmark) | **100%** | ≥ 95% |
-| p95 quote latency (engine) | **~1.3 ms** | ≤ 3 s |
+| p95 quote latency (engine) | **~2–3 ms** | ≤ 3 s |
 | Compliance false-positive hold rate | **0.0%** | ≤ 2.0% |
 | OFAC screening recall | **100%** | 100% |
 | GNN test AUC (synthetic benchmark — prototype evidence, not production effectiveness) | **0.9038** | ceiling ≈0.94; linear-rule baseline matches (0.9185) |
@@ -51,4 +51,4 @@ Roadmap: pilot with one UAE MTO → three corridors (UAE, KSA, Malaysia → Bang
 
 ---
 
-*Honesty statement: quotes are simulated snapshots; settlement runs on Stellar testnet (or a clearly labeled simulated hash); payout rails are mocked; GNN/regulatory evals are synthetic/curated benchmarks. Production integration replaces each labeled surface one-for-one.*
+*Honesty statement: quotes are simulated snapshots; settlement is simulated by design (clearly labeled, testnet-ready adapter); payout rails are mocked; GNN/regulatory evals are synthetic/curated benchmarks. Production integration replaces each labeled surface one-for-one.*
