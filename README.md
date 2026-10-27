@@ -399,4 +399,5 @@ xPay is a hackathon prototype. Quotes are simulated snapshots, blockchain settle
 **simulated by design** (testnet-ready adapter, clearly labeled — never presented as a
 real ledger transaction), and payout rails are mocked. It is not a licensed
 money-services business — yet. PII stays off-chain; only hashes and non-identifying
-audit data touch the ledger.
+audit data touch the ledger. Responsible-AI statement:
+[docs/responsible-ai.md](docs/responsible-ai.md).
