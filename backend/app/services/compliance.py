@@ -235,7 +235,7 @@ def to_pacs_008(transaction: dict) -> dict:
     The government incentive is paid separately by the government, so it is
     carried in a documented extension field, not in IntrBkSttlmAmt.
     """
-    msg_id = ("BM" + transaction["transaction_id"].replace("-", "")[:8]).upper()[:16]
+    msg_id = ("XP" + transaction["transaction_id"].replace("-", "")[:8]).upper()[:16]
     breakdown = transaction["breakdown"]
     net = breakdown.get("true_net_receive_bdt")
     if net is None:

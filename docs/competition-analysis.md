@@ -53,7 +53,7 @@ Verified against the live event page (cloudcampbd.com/ai-builders-congress, fetc
 **Corrected / verified against the live page:**
 1. The advisory's **five 30–60s video segments are not on the public page** — the page publishes the six criteria above and a 3-minute in-person pitch format. Treat the 5-segment cut as good discipline; confirm exact portal requirements (video length, public/unlisted) before recording.
 2. **KPI honesty:** the advisory suggests "≥95% intent accuracy" — ours is **measured at 100% on a curated 49-utterance en/bn/ar benchmark** and labeled as such (not production statistics). Never present curated-benchmark numbers as production metrics.
-3. **+3.2% uplift checks out:** computed 3.26% (AED 1,000: ৳33,488.80 vs SWIFT ৳32,432.40).
+3. **+3.05% uplift checks out (post platform-fee):** AED 1,000 → ৳33,423.20 best route (incl. xPay's AED 2 fee) vs legacy SWIFT ৳32,432.40.
 4. The corridor figures — **$35.56B FY2025-26 total, $4.58B UAE corridor** — were confirmed by the team and are now filled into `demo-script.md` and `one-pager.md`. Keep the Bangladesh Bank release link citable in Q&A; re-verify the link resolves before recording day.
 5. Config format: advisory said YAML; we used **JSON** so the whole engine + tests stay stdlib-only (schema identical to the suggested one).
 6. "Don't spend the week adding features" — right instinct, but 4 of the 5 suggested upgrades map 1:1 to published criteria; that's submission work. The one we'd have skipped if short on time was GNN training — done anyway with an honest eval.

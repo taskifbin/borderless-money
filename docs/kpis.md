@@ -4,9 +4,9 @@ Every number below is **computed from this repository** — corridor math, eval 
 
 | KPI | Measured (2026-10-24) | Internal target | How it is computed |
 | :--- | ---: | :--- | :--- |
-| `net_receive_uplift_pct` | **3.26%** | ≥ 3.0% | AED 1,000 → BKASH: best-route True Net Receive (৳33,488.80) vs Traditional SWIFT (৳32,432.40) = ৳1,056.40 / 32,432.40 |
+| `net_receive_uplift_pct` | **3.05%** | ≥ 3.0% | AED 1,000 → BKASH: best-route True Net Receive **incl. xPay's AED 2 platform fee** (৳33,423.20) vs the legacy counterfactual — same SWIFT rail WITHOUT the platform fee (৳32,432.40) = ৳990.80 / 32,432.40 |
 | `intent_accuracy_pct` | **100.0%** | ≥ 95% | Full-field match (amount, currency, payout, recipient, language) on **49 curated utterances** in en/bn/ar — `backend/data/intent_eval.json`. Parser fixed during measurement: longest-match-first relation extraction, Arabic "بنك", Bengali relation inflections |
-| `p95_quote_latency_ms` | **~1.8 ms** | ≤ 3,000 ms | p95 of 20 in-process end-to-end quote runs — **engine time only** (excludes network + model load) |
+| `p95_quote_latency_ms` | **live at `GET /metrics`** | ≤ 3,000 ms | p95 of 20 in-process end-to-end quote runs — **engine time only** (excludes network + model load); machine-dependent, so the README quotes the endpoint rather than a hard-coded number |
 | `false_positive_hold_rate_pct` | **0.0%** | ≤ 2.0% | 21 known-clear names screened against the sample SDN list — none flagged (`data/sanctions_eval.json`) |
 | `ofac_recall_pct` | **100.0%** | 100% | 14 normalized true hits BLOCKED + 14 near-variants REVIEWED on the realistic benchmark (`make eval-sanctions`) |
 
@@ -15,7 +15,7 @@ Every number below is **computed from this repository** — corridor math, eval 
 The World Bank's **Remittance Prices Worldwide** publication tracks the global
 average cost of sending $200 — roughly **6%+ of principal in recent releases**
 (verify the exact current figure at remittanceprices.worldbank.org before
-quoting on camera). xPay's measured +3.26% net-receive uplift versus
+quoting on camera). xPay's measured +3.05% net-receive uplift versus
 the SWIFT baseline, plus the surfaced 2.5% incentive, is best expressed against
 that external number: **the total effective cost to the family drops by roughly
 a third relative to the global average cost of remitting** — a claim about the

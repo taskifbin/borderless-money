@@ -81,14 +81,14 @@ def scenario_a_successful_recommendation():
         state.get("error") is None
         and len(routes) == 5
         and best.get("name") == "Stellar Hybrid Anchor → BKASH"
-        and best.get("breakdown", {}).get("true_net_receive_bdt") == 33488.80
-        and best.get("breakdown", {}).get("true_net_receive_exact") == "33488.80"
+        and best.get("breakdown", {}).get("true_net_receive_bdt") == 33423.20
+        and best.get("breakdown", {}).get("true_net_receive_exact") == "33423.20"
         and best.get("breakdown", {}).get("govt_incentive_added_bdt") == 820.00
         and best.get("quote_id") or state.get("quote_id")
         and len(state.get("explanation_log", [])) >= 3
     )
-    record("A", "quote → ranked routes → best = Stellar Hybrid @ ৳33,488.80 with 2.5% incentive",
-           "5 eligible routes ranked by expected value; best ৳33,488.80; quote_id issued; evidence in log",
+    record("A", "quote → ranked routes → best = Stellar Hybrid @ ৳33,423.20 with 2.5% incentive (AED 2 platform fee included)",
+           "5 eligible routes ranked by expected value; best ৳33,423.20; quote_id issued; evidence in log",
            f"best={best.get('name')}, net={best.get('breakdown', {}).get('true_net_receive_bdt')}, "
            f"quote_id={state.get('quote_id')}, log_entries={len(state.get('explanation_log', []))}",
            ok, data_type="fixture-quotes + deterministic-engine")

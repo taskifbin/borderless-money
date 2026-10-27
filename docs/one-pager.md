@@ -11,7 +11,7 @@ Bangladesh received **$35.56 billion** in remittances in FY2025-26 — **$4.58 b
 
 ## 2. Solution & differentiator
 
-xPay is a **net-receive router**: say or type the transfer in Bangla, English, or Arabic, and it ranks every viable rail by the taka that actually arrives — fees out, **government incentive in**. One sentence: *no other app optimizes for what arrives, because it is the only one that computes the 2.5% incentive into the route choice.* On AED 1,000, the recommended rail delivers **৳33,488.80 vs ৳32,432.40 over SWIFT (+3.26%)**.
+xPay is a **net-receive router**: say or type the transfer in Bangla, English, or Arabic, and it ranks every viable rail by the taka that actually arrives — fees out (including xPay's own flat AED 2 sender fee, shown as a line item), **government incentive in**. One sentence: *the only tool we found that computes the 2.5% incentive into the route choice itself.* On AED 1,000, the recommended rail delivers **৳33,423.20 vs ৳32,432.40 over legacy SWIFT (+3.05%)**.
 
 ## 3. System flow
 
@@ -34,7 +34,7 @@ Full **bn UI toggle on all four screens** (persisted), Bangla voice input, and t
 
 | KPI | Value | Target |
 | :--- | ---: | :--- |
-| Net-receive uplift vs SWIFT | **+3.26%** | ≥ 3.0% |
+| Net-receive uplift vs SWIFT | **+3.05%** | ≥ 3.0% |
 | Intent accuracy (curated en/bn/ar benchmark) | **100%** | ≥ 95% |
 | p95 quote latency (engine) | **~2–3 ms** | ≤ 3 s |
 | Compliance false-positive hold rate | **0.0%** | ≤ 2.0% |

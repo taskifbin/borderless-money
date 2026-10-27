@@ -16,6 +16,7 @@ export interface Breakdown {
   currency_source: string;
   fx_rate: number;
   fee_source: number | null;
+  platform_fee_source?: number | null;
   gross_bdt: number | null;
   fees_deducted_bdt: number | null;
   govt_incentive_rate: number;
@@ -26,6 +27,7 @@ export interface Breakdown {
   // exact decimal strings from the money engine (authoritative values)
   true_net_receive_exact?: string;
   gross_exact?: string;
+  platform_fee_exact?: string;
   pricing_completeness?: "complete" | "incomplete";
   missing_fields?: string[];
 }
@@ -38,6 +40,12 @@ export interface RouteOption {
   mid_market_rate: number;
   spread_bdt_per_aed: number;
   fee_aed: number | null;
+  platform_fee_source?: number | null;
+  fee_source_components?: {
+    rail_fee_source: number | null;
+    last_mile_fee_source: number;
+    platform_fee_source: number;
+  };
   settlement_time_hrs: number;
   success_rate: number;
   is_best: boolean;

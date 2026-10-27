@@ -24,7 +24,7 @@ Open with a stat, not a logo.
 
 > "xPay is a **net-receive router**. One sentence in Bangla, English, or Arabic. We compare every rail and show the exact taka that arrives — fees out, government bonus in."
 
-*(Screen: quote screen. Point at: They receive ৳33,488.80 · Includes ৳820.00 government bonus. One line only:)*
+*(Screen: quote screen. Point at: They receive ৳33,423.20 · Includes ৳820.00 government bonus. One line only:)*
 
 > "No other app optimizes for net receive — because computing the 2.5% incentive into the route choice is the whole product."
 
@@ -38,7 +38,7 @@ Fast cuts, no narration of architecture here:
 4. Switch to the review scenario: payment **held** — "We need to verify this transfer. A human will review it within 24 hours." *(10 seconds — this is the responsible-AI proof: holds, not silent rejections.)*
 5. Show the receipt's audit hash + Technical details for 2 seconds.
 
-At **1:45**: click **বাংলা** — the quote screen flips to Bangla for 3 seconds, same ৳33,488.80. *(Bangla localisation, proven not claimed.)*
+At **1:45**: click **বাংলা** — the quote screen flips to Bangla for 3 seconds, same ৳33,423.20. *(Bangla localisation, proven not claimed.)*
 
 ## 2:00–2:30 · AI approach (Technical Execution)
 
@@ -50,7 +50,7 @@ Four layers, thirty seconds:
 
 ## 2:30–3:00 · Impact numbers + next step
 
-> "Measured today: **+3.26% more money arrives**, sub-3-second quotes, zero false holds, full screening recall. Next: a pilot with one UAE exchange partner, three corridors — UAE, KSA, Malaysia to Bangladesh — and a **Remittance-as-a-Service API** for bKash and Nagad partners, at a 0.2–0.5% take rate. Ten thousand senders in six months. FinSphere AI track — **xPay. Built in Dhaka, for the world.**"
+> "Measured today: **+3.05% more money arrives** after our own AED 2 fee is counted, sub-3-second quotes, zero false holds, full screening recall. Next: a pilot with one UAE exchange partner, three corridors — UAE, KSA, Malaysia to Bangladesh — and a **Remittance-as-a-Service API** for bKash and Nagad partners, at a 0.2–0.5% take rate. Ten thousand senders in six months. FinSphere AI track — **xPay. Built in Dhaka, for the world.**"
 
 *(Screen: `/metrics` JSON or the KPI table. End on it.)*
 
@@ -65,5 +65,5 @@ Four layers, thirty seconds:
 - [ ] "Simulated quotes / testnet" honesty labels visible in every money screen
 - [ ] Review scenario pre-loaded via `/?scenario=fuzzy_review`
 - [ ] Bangla toggle moment at 1:45 actually recorded (persisted toggle — switch back after)
-- [ ] Burn in captions on: ৳33,488.80, +3.26%, AUC 0.90 (synthetic benchmark), 100% recall (curated set)
+- [ ] Burn in captions on: ৳33,423.20, +3.05%, AUC 0.90 (synthetic benchmark), 100% recall (curated set)
 - [ ] 3:00 hard cap; fresh-eyes viewer test passed before final cut

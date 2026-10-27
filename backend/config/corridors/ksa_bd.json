@@ -9,6 +9,8 @@
   "mid_market_rate": 8.83,
   "fx_source": "Stub — replace with live FX feed before use",
   "sourced_at": "2026-10-24T00:00:00Z",
+  "platform_fee_source": 2.0,
+  "platform_fee_note": "xPay flat sender fee charged in source currency, SAR 2.00 ≈ AED 2.00 (assumption; docs/unit-economics.md); # SOURCE NEEDED: confirmed fee schedule",
   "govt_incentive_rate": 0.025,
   "govt_incentive_note": "Same Bangladesh Bank incentive applies to formal remittance from any corridor",
   "rails": [

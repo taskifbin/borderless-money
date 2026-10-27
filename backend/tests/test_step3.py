@@ -70,28 +70,28 @@ class TestGroundedExplainer(unittest.TestCase):
         result = explainer.build_explanations(self.state)
         self.assertTrue(result["grounded"])
         self.assertFalse(result["llm_paraphrased"])
-        self.assertIn("33,488.80", result["en"])
+        self.assertIn("33,423.20", result["en"])
         # Bangla template: Bangla copy with the same grounded Latin-digit numbers
-        self.assertIn("33,488.80", result["bn"])
+        self.assertIn("33,423.20", result["bn"])
         self.assertIn("প্রণোদনা", result["bn"])
 
     def test_number_guard_rejects_injected_numbers(self):
         allowed = explainer.allowed_numbers(self.state)
         violations = explainer.numbers_violation(
-            "They receive 33,488.80 BDT with a service fee of 999 BDT.", allowed)
+            "They receive 33,423.20 BDT with a service fee of 999 BDT.", allowed)
         self.assertIn("999", " ".join(violations))
 
     def test_number_guard_accepts_clean_paraphrase(self):
         allowed = explainer.allowed_numbers(self.state)
-        clean = ("Your family receives 33,488.80 taka including the 820.00 taka "
+        clean = ("Your family receives 33,423.20 taka including the 820.00 taka "
                  "government incentive (2.5%), in about 2 hours.")
         self.assertEqual(explainer.numbers_violation(clean, allowed), [])
 
     def test_llm_paraphrase_with_invented_number_is_rejected(self):
         result = explainer.build_explanations(
-            self.state, llm_fn=lambda p: "They receive 33,488.80 BDT for a flat 4.99 service charge.")
+            self.state, llm_fn=lambda p: "They receive 33,423.20 BDT for a flat 4.99 service charge.")
         self.assertFalse(result["llm_paraphrased"], "paraphrase with invented number must be rejected")
-        self.assertIn("33,488.80", result["en"])  # template kept
+        self.assertIn("33,423.20", result["en"])  # template kept
 
     def test_state_carries_explanations(self):
         self.assertTrue(self.state["explanation_en"])

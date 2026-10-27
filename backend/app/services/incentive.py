@@ -11,7 +11,8 @@ string (`*_exact` fields) which is the authoritative value.
 Calculation model (full contract in docs/FINANCIAL_MODEL.md):
 
     gross_dest   = principal_source x fx_rate
-    fees_dest    = fee_source x fx_rate          (fees quoted in SOURCE currency
+    fees_dest    = (fee_source + platform_fee_source) x fx_rate
+                                                 (fees quoted in SOURCE currency
                                                   and converted at the same rate;
                                                   pass fee_currency="DEST" for
                                                   fees already priced in BDT)
@@ -20,6 +21,11 @@ Calculation model (full contract in docs/FINANCIAL_MODEL.md):
                                                   BB incentive attaches to the
                                                   remitted amount, not the fee)
     true_net     = gross_dest - fees_dest + incentive
+
+The platform fee is xPay's own flat sender fee (a product/business line, see
+docs/unit-economics.md). It is carried as a DISTINCT line item so rail fee,
+last-mile fee and platform fee stay separately visible; economically it is part
+of fees_dest like any other sender-side cost.
 
 Anti-double-counting: fx_rate is the ALL-IN customer rate — any provider spread
 is understood to be embedded IN it, never added again as a separate fee line.
@@ -47,13 +53,15 @@ def calculate_true_net_receive_exact(
     dest_currency: str = "BDT",
     govt_incentive_rate=None,
     fee_currency: str = "SOURCE",
+    platform_fee_source=None,
 ) -> dict:
     """Price one route in exact Decimal. Returns {"values": {...Decimal...},
     "incomplete": bool, "missing": [str], "currency_dest": str}.
 
     Raises MoneyValueError (a ValueError) for negative/zero principal, non-
-    positive FX rates, or malformed numeric input. A missing fee (None) does
-    NOT raise: it marks the quote incomplete and withholds the net figure.
+    positive FX rates, malformed numeric input, or a negative platform fee.
+    A missing rail fee (None) does NOT raise: it marks the quote incomplete
+    and withholds the net figure (the platform fee never masks missing data).
     """
     amount = D(amount_source)
     rate_fx = D(fx_rate)
@@ -61,6 +69,12 @@ def calculate_true_net_receive_exact(
         raise MoneyValueError(f"transfer principal must be positive, got {amount}")
     if rate_fx <= 0:
         raise MoneyValueError(f"fx rate must be positive, got {rate_fx}")
+
+    platform = D(0)
+    if platform_fee_source is not None:
+        platform = D(platform_fee_source)
+        if platform < 0:
+            raise MoneyValueError(f"platform fee cannot be negative, got {platform}")
 
     incentive_rate = D(config.GOVT_INCENTIVE_RATE if govt_incentive_rate is None else govt_incentive_rate)
     if not (0 <= incentive_rate <= 1):
@@ -79,9 +93,9 @@ def calculate_true_net_receive_exact(
     if fee is None:
         fees_dest = None
     elif (fee_currency or "SOURCE").upper() == "SOURCE":
-        fees_dest = fee * rate_fx
+        fees_dest = (fee + platform) * rate_fx
     else:
-        fees_dest = fee
+        fees_dest = fee + platform * rate_fx
     incentive = gross * incentive_rate if not missing else None
     net = None if missing else (gross - fees_dest + incentive)
 
@@ -90,6 +104,7 @@ def calculate_true_net_receive_exact(
     values = {
         "amount_source": q_src(amount),
         "fee_source": q_src(fee),
+        "platform_fee_source": q_src(platform),
         "fx_rate": rate_fx,
         "gross_dest": q_dst(gross),
         "fees_deducted_dest": q_dst(fees_dest),
@@ -117,6 +132,7 @@ def calculate_true_net_receive(
     dest_currency: str = "BDT",
     govt_incentive_rate=None,
     fee_currency: str = "SOURCE",
+    platform_fee_source=None,
 ) -> dict:
     """Backward-compatible breakdown (display floats) + exact decimal strings.
 
@@ -129,7 +145,7 @@ def calculate_true_net_receive(
         amount_source, fx_rate, fee_source, route=route,
         settlement_time_hrs=settlement_time_hrs, currency_source=currency_source,
         dest_currency=dest_currency, govt_incentive_rate=govt_incentive_rate,
-        fee_currency=fee_currency,
+        fee_currency=fee_currency, platform_fee_source=platform_fee_source,
     )
     v = exact["values"]
     dest = exact["currency_dest"]
@@ -141,6 +157,7 @@ def calculate_true_net_receive(
         "currency_source": exact["currency_source"],
         "fx_rate": num(v["fx_rate"]),
         "fee_source": num(v["fee_source"]),
+        "platform_fee_source": num(v["platform_fee_source"]),
         f"gross_{dest_field}": num(v["gross_dest"]),
         f"fees_deducted_{dest_field}": num(v["fees_deducted_dest"]),
         "govt_incentive_rate": num(v["govt_incentive_rate"]),
@@ -155,6 +172,7 @@ def calculate_true_net_receive(
         # exact decimal strings — authoritative values
         "gross_exact": str(v["gross_dest"]),
         "fees_deducted_exact": str(v["fees_deducted_dest"]),
+        "platform_fee_exact": str(v["platform_fee_source"]),
         "govt_incentive_exact": str(v["govt_incentive_dest"]),
         "true_net_receive_exact": str(v["true_net_dest"]),
         "pricing_completeness": "incomplete" if exact["incomplete"] else "complete",

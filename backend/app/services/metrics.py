@@ -1,7 +1,8 @@
 """Measured demo KPIs — computed from the repo's own eval sets, never invented.
 
 Every number returned here is reproducible:
-  - net_receive_uplift_pct     : corridor math (best route vs Traditional SWIFT)
+  - net_receive_uplift_pct     : corridor math (best route incl. platform fee vs
+                                 the legacy SWIFT counterfactual without it)
   - intent_accuracy_pct        : backend/data/intent_eval.json (50 utterances, en/bn/ar)
   - p95_quote_latency_ms       : 20 in-process full quote runs, timed
   - false_positive_hold_rate_pct / ofac_recall_pct
@@ -27,15 +28,34 @@ def _load_eval(name: str) -> dict:
         return json.load(f)
 
 
-def _net_receive_uplift_pct() -> float:
-    routes = routing_scorer.score_routes(1000.0, corridor_cfg.load_corridor().get("default_payout", "BKASH"))
-    by_name = {r["name"]: r for r in routes}
+def _net_receive_uplift_pct() -> tuple[float, dict]:
+    """xPay's best route (all sender costs incl. the platform fee) vs the
+    legacy counterfactual: the same Traditional SWIFT rail priced WITHOUT
+    xPay's platform fee — i.e. what the sender's current channel costs."""
+    from app.services.incentive import calculate_true_net_receive_exact
+    from app.services.money import D, to_number
+
+    cfg = corridor_cfg.load_corridor()
+    payout = cfg.get("default_payout", "BKASH")
+    routes = routing_scorer.score_routes(1000.0, payout)
     best = routes[0]["breakdown"]["true_net_receive_bdt"]
-    swift = next(
-        (r for name, r in by_name.items() if r["rail"] == "Traditional SWIFT"),
-        routes[-1],
-    )["breakdown"]["true_net_receive_bdt"]
-    return round((best / swift - 1.0) * 100.0, 2)
+    rail = next(r for r in cfg["rails"] if r["name"] == "Traditional SWIFT")
+    lm_fee = cfg["last_mile"][payout]["Traditional SWIFT"][0]
+    legacy = calculate_true_net_receive_exact(
+        1000.0, rail["fx"], D(rail["fee_source"]) + D(lm_fee),
+        currency_source=cfg["source_currency"], dest_currency=cfg["dest_currency"],
+        govt_incentive_rate=cfg["govt_incentive_rate"],
+        platform_fee_source=0,
+    )
+    legacy_net = to_number(legacy["values"]["true_net_dest"])
+    uplift = round((best / legacy_net - 1.0) * 100.0, 2)
+    detail = {
+        "best_route_net": best,
+        "legacy_swift_net": legacy_net,
+        "platform_fee_included_in_best": True,
+        "platform_fee_in_legacy_baseline": False,
+    }
+    return uplift, detail
 
 
 def _intent_accuracy() -> tuple[float, dict]:
@@ -97,14 +117,16 @@ def _compliance_scores() -> tuple[float, float, dict]:
 def compute_metrics() -> dict:
     recall, fp_rate, compliance_counts = _compliance_scores()
     intent_pct, intent_counts = _intent_accuracy()
+    uplift, uplift_detail = _net_receive_uplift_pct()
     return {
-        "net_receive_uplift_pct": _net_receive_uplift_pct(),
+        "net_receive_uplift_pct": uplift,
+        "net_receive_uplift_detail": uplift_detail,
         "intent_accuracy_pct": intent_pct,
         "p95_quote_latency_ms": _p95_quote_latency_ms(),
         "false_positive_hold_rate_pct": fp_rate,
         "ofac_recall_pct": recall,
         "methodology": {
-            "net_receive_uplift_pct": "AED 1,000 -> BKASH: best-route True Net Receive vs Traditional SWIFT, from corridor config",
+            "net_receive_uplift_pct": "AED 1,000 -> BKASH: best route priced end-to-end WITH xPay's flat platform fee vs the legacy counterfactual (same Traditional SWIFT rail WITHOUT the platform fee — the sender's current channel), from corridor config",
             "intent_accuracy_pct": f"full-field match on {intent_counts['n']} curated en/bn/ar utterances (backend/data/intent_eval.json); {intent_counts['passed']} passed",
             "p95_quote_latency_ms": "p95 of 20 in-process end-to-end quote runs (parse -> score -> screen)",
             "compliance": f"realistic sanctions benchmark: {compliance_counts['true_hits_blocked']} true hits blocked, "

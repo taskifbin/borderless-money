@@ -372,6 +372,45 @@ class TestIdempotencyStore(unittest.TestCase):
         self.assertEqual(store.get_idempotent_response(key)["transaction"]["transaction_id"], "tx-A")
 
 
+class TestPlatformFee(unittest.TestCase):
+    """The AED 2.00 xPay sender fee: an explicit line item, subtracted exactly
+    once, never masking missing rail pricing (Phase 1.5 regression)."""
+
+    def test_platform_fee_subtracted_exactly_once(self):
+        base = incentive.calculate_true_net_receive(1000, 32.80, 4.00)
+        with_fee = incentive.calculate_true_net_receive(1000, 32.80, 4.00, platform_fee_source=2.00)
+        self.assertEqual(with_fee["true_net_receive_exact"], "33423.20")
+        self.assertEqual(with_fee["true_net_receive_bdt"], 33423.20)
+        delta = (Decimal(str(with_fee["true_net_receive_bdt"]))
+                 - Decimal(str(base["true_net_receive_bdt"])))
+        self.assertEqual(delta, Decimal("-65.60"))  # exactly 2.00 x 32.80, once
+
+    def test_platform_fee_is_a_visible_line_item(self):
+        b = incentive.calculate_true_net_receive(1000, 32.80, 4.00, platform_fee_source=2.00)
+        self.assertEqual(b["platform_fee_source"], 2.00)
+        self.assertEqual(b["platform_fee_exact"], "2.00")
+        self.assertEqual(b["fees_deducted_bdt"], 196.80)  # (4.00 + 2.00) x 32.80
+
+    def test_platform_fee_never_masks_missing_rail_fee(self):
+        b = incentive.calculate_true_net_receive(1000, 32.80, None, platform_fee_source=2.00)
+        self.assertEqual(b["pricing_completeness"], "incomplete")
+        self.assertIsNone(b["true_net_receive_bdt"])
+
+    def test_negative_platform_fee_rejected(self):
+        with self.assertRaises(MoneyValueError):
+            incentive.calculate_true_net_receive_exact(1000, 32.80, 4.00, platform_fee_source=-1)
+
+    def test_scorer_reports_fee_composition(self):
+        routes = routing_scorer.score_routes(1000, "BKASH")
+        stellar = next(r for r in routes if r["rail"] == "Stellar Hybrid Anchor")
+        comp = stellar["fee_source_components"]
+        self.assertEqual(comp["platform_fee_source"], 2.0)
+        self.assertEqual(comp["rail_fee_source"] + comp["last_mile_fee_source"]
+                         + comp["platform_fee_source"], stellar["fee_aed"])
+        self.assertEqual(stellar["breakdown"]["platform_fee_source"], 2.0)
+        self.assertEqual(stellar["breakdown"]["true_net_receive_bdt"], 33423.20)
+
+
 class TestCorridorConfigInvariants(unittest.TestCase):
     """Hard invariants every corridor config must satisfy. A customer FX rate
     above mid-market is not a legal quote (the provider would be paying the

@@ -4,7 +4,8 @@
     make smoke                                          # fresh venv + requirements-lite + this test
 
 Every module in the package must import; the default pipeline must run end-to-end
-and produce the locked demo numbers (AED 1,000 -> bKash = 33,488.80 BDT).
+and produce the locked demo numbers (AED 1,000 -> bKash = 33,423.20 BDT, i.e.
+32,800.00 gross - 196.80 fees incl. the AED 2.00 platform fee + 820.00 incentive).
 """
 import importlib
 import pkgutil
@@ -44,7 +45,7 @@ class TestDefaultPipeline(unittest.TestCase):
         state = orchestrator.run("execute", text="Send 1,000 dirhams to my mother's bKash in Dhaka")
         self.assertEqual(state["decision"], "CLEAR")
         tx = state["transaction"]
-        self.assertEqual(tx["true_net_receive_bdt"], 33488.80)
+        self.assertEqual(tx["true_net_receive_bdt"], 33423.20)
         self.assertEqual(tx["govt_incentive_2_5_pct"], 820.00)
         self.assertEqual(tx["status"], "COMPLETED")
         self.assertEqual(state["execution"]["network"], "SIMULATED")

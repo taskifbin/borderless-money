@@ -35,8 +35,11 @@ For a route with principal `P` (source ccy), all-in FX rate `r`, fee `f`
 
 ```
 gross_dest       = P × r
-fees_dest        = f × r            (fee quoted in SOURCE currency — default)
-                 | f                (fee quoted in DEST currency: fee_currency="DEST")
+fees_dest        = (f + p) × r      (f = rail+last-mile fee, p = platform fee
+                                     — xPay's own flat sender fee, both quoted
+                                     in SOURCE currency — default; p is itemized
+                                     as breakdown.platform_fee_source)
+                 | f + p × r        (fees quoted in DEST currency: fee_currency="DEST")
 incentive_dest   = gross_dest × g   (computed on converted principal BEFORE
                                      fee deduction — the BB incentive attaches
                                      to the remitted amount, not the fee)
@@ -126,7 +129,7 @@ log says "no success claim", and the receipt carries
 | Uncertain settlement → no success claim | `test_uncertain_settlement_never_reports_success` |
 | Unpriced route refused at settlement + pacs.008 raises | `test_unpriced_route_refused_at_settlement` |
 | Idempotency first-response-wins | `TestIdempotencyStore` |
-| Known reference values (AED 1,000 → ৳33,488.80 etc.) | `test_core.TestIncentiveMath` |
+| Known reference values (engine: AED 1,000 → ৳33,488.80 ex-platform-fee; end-to-end incl. AED 2 platform fee → ৳33,423.20; uplift vs legacy SWIFT +3.05%) | `test_core.TestIncentiveMath`, `test_financial.TestPlatformFee`, `tests/test_smoke.py` |
 
 ## 9. Known modeling simplifications (honest list)
 

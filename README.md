@@ -59,17 +59,20 @@ $$
 The incentive is **not assumed for every transfer**: it is computed per route under the
 applicable policy — the Bangladesh Bank cash incentive applies to qualifying
 formal-channel remittance, so it is added only on rails flagged `incentive_eligible`
-(see the Cash Pickup row in the table below, which earns 0).
+(see the incentive-eligibility flag in `backend/config/corridors/uae_bd.json` —
+the ineligible Cash Pickup rail earns 0 even with the best headline FX).
 
-**Worked example — sending AED 1,000 to bKash (simulated quotes):**
+**Worked example — sending AED 1,000 to bKash through xPay (simulated quotes):**
 
 | Route | FX Rate | Total Fees | Govt Incentive (2.5%) | **True Net Receive** | Time |
 | :--- | ---: | ---: | ---: | ---: | ---: |
-| **Stellar Hybrid Anchor → bKash** ✅ | 32.80 | 4.00 AED | **+820.00 BDT** | **33,488.80 BDT** | 2 h |
-| Exchange House MTO → bKash | 32.30 | 12.00 AED | +807.50 BDT | 32,719.90 BDT | 6 h |
-| Traditional SWIFT → bKash | 32.40 | 24.00 AED | +810.00 BDT | 32,432.40 BDT | 28 h |
+| **Stellar Hybrid Anchor → bKash** ✅ | 32.80 | 6.00 AED *(3.00 rail + 1.00 last-mile + **2.00 xPay fee**)* | **+820.00 BDT** | **33,423.20 BDT** | 2 h |
+| Exchange House MTO → bKash | 32.30 | 14.00 AED *(incl. 2.00 xPay fee)* | +807.50 BDT | 32,655.30 BDT | 6 h |
+| Traditional SWIFT → bKash (via xPay) | 32.40 | 26.00 AED *(incl. 2.00 xPay fee)* | +810.00 BDT | 32,367.60 BDT | 28 h |
+| *Legacy counterfactual: Traditional SWIFT sent outside xPay* | 32.40 | 24.00 AED | +810.00 BDT | 32,432.40 BDT | 28 h |
 
-The AI-recommended route delivers **1,056.40 BDT more** than the legacy bank rail —
+The AI-recommended route delivers **990.80 BDT more (+3.05%)** than the legacy bank rail —
+after xPay's own AED 2.00 sender fee is paid —
 and the receipt shows exactly why, line by line.
 
 ### 🎯 Target Users
@@ -219,7 +222,7 @@ docker run -p 8000:8000 xpay-backend
 ```
 
 Verified: the image builds, boots in ~10 s, and serves the exact demo numbers
-(৳33,488.80) — see [REAL_VS_SIMULATED.md](REAL_VS_SIMULATED.md).
+(৳33,423.20) — see [REAL_VS_SIMULATED.md](REAL_VS_SIMULATED.md).
 
 ### Backend (FastAPI, local venv)
 
@@ -288,7 +291,7 @@ Full request/response JSON: [docs/api-contracts.md](docs/api-contracts.md)
 
 | KPI | Measured | How |
 | :--- | ---: | :--- |
-| Net-receive uplift vs SWIFT | **+3.26%** | corridor math, AED 1,000 (৳33,488.80 vs ৳32,432.40) |
+| Net-receive uplift vs SWIFT | **+3.05%** | corridor math, AED 1,000 (৳33,423.20 best route incl. xPay's AED 2 fee vs ৳32,432.40 legacy SWIFT) |
 | Intent accuracy (en/bn/ar) | **100%** | 49-utterance curated benchmark (`data/intent_eval.json`) |
 | p95 quote latency (engine) | **~2–3 ms** | 20 timed in-process quote runs — live value at `GET /metrics` |
 | Compliance false-positive hold rate | **0.0%** | 21 labeled clear names (`data/sanctions_eval.json`) |

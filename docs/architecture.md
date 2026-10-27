@@ -124,7 +124,7 @@ becomes `RECONCILIATION_REQUIRED` with no hash. `network` is always explicit.
 ```text
 Voice "Send 1,000 dirhams to my mother's bKash in Dhaka"
   → POST /api/agent/parse-intent        (intent: 1000 AED → BDT, BKASH, "Mother")
-  → POST /api/agent/quote               (3 routes ranked; Stellar best: 33,488.80 BDT)
+  → POST /api/agent/quote               (5 routes ranked; Stellar best: 33,423.20 BDT)
   → user approves route in UI
   → POST /api/agent/execute
        ├─ GNN risk 0.07 (LOW)           → pass

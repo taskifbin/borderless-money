@@ -39,7 +39,10 @@ class TestIncentiveMath(unittest.TestCase):
         by_name = {r["name"]: r for r in routes}
         delta = (by_name["Stellar Hybrid Anchor → BKASH"]["breakdown"]["true_net_receive_bdt"]
                  - by_name["Traditional SWIFT → BKASH"]["breakdown"]["true_net_receive_bdt"])
-        self.assertEqual(round(delta, 2), 1056.40)
+        # Both routes carry the AED 2.00 platform fee; the BDT delta shrinks
+        # slightly vs the pre-platform-fee 1,056.40 because Swift's worse FX
+        # converts the same AED 2.00 into 0.80 BDT more cost.
+        self.assertEqual(round(delta, 2), 1055.60)
 
 
 class TestRoutingScorer(unittest.TestCase):
@@ -158,7 +161,7 @@ class TestOrchestratorEndToEnd(unittest.TestCase):
         state = orchestrator.run("execute", text=self.TEXT)
         self.assertEqual(state["decision"], "CLEAR")
         tx = state["transaction"]
-        self.assertEqual(tx["true_net_receive_bdt"], 33488.80)
+        self.assertEqual(tx["true_net_receive_bdt"], 33423.20)
         self.assertEqual(tx["govt_incentive_2_5_pct"], 820.00)
         self.assertEqual(tx["status"], "COMPLETED")
         self.assertEqual(state["execution"]["network"], "SIMULATED")

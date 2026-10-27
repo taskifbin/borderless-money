@@ -112,11 +112,12 @@ No money moves.
         "currency_source": "AED",
         "fx_rate": 32.8,
         "fee_source": 4.0,
+        "platform_fee_source": 2.0,
         "gross_bdt": 32800.0,
-        "fees_deducted_bdt": 131.2,
+        "fees_deducted_bdt": 196.8,
         "govt_incentive_rate": 0.025,
         "govt_incentive_added_bdt": 820.0,
-        "true_net_receive_bdt": 33488.8,
+        "true_net_receive_bdt": 33423.2,
         "route": "Stellar Hybrid Anchor → BKASH",
         "settlement_time_hrs": 2.0
       }
@@ -142,7 +143,7 @@ No money moves.
   "transaction": null,
   "explanation_log": [
     "Intent parsed: send AED 1,000 → BDT via BKASH to 'Mother' (confidence 0.90)",
-    "Scored 3 viable corridor paths; best = Stellar Hybrid Anchor → BKASH: True Net Receive 33,488.80 BDT ..."
+    "Scored 3 viable corridor paths; best = Stellar Hybrid Anchor → BKASH: True Net Receive 33,423.20 BDT ..."
   ]
 }
 ```
@@ -236,15 +237,15 @@ path; production callers leave it at `COMPLETED`.
     "amount_source": 1000.0,
     "currency_source": "AED",
     "fx_rate_applied": 32.8,
-    "fee_deducted_aed": 4.0,
+    "fee_deducted_aed": 6.0,
     "govt_incentive_2_5_pct": 820.0,
-    "true_net_receive_bdt": 33488.8,
+    "true_net_receive_bdt": 33423.2,
     "route_selected": "Stellar Hybrid Anchor → BKASH",
     "stellar_hash": "9f2c6e…",
     "status": "COMPLETED",
     "created_at": "2026-10-24T14:30:05Z",
     "breakdown": { "...": "same breakdown object as the route" },
-    "iso_20022": { "MsgId": "BM3F9A1C2B", "CreDtTm": "…", "Dbtr": "Mohammed Rafiq", "Cdtr": "Ayesha Begum", "IntrBkSttlmAmt": {"Ccy": "BDT", "Value": "33488.80"} }
+    "iso_20022": { "MsgId": "XP3F9A1C2B", "CreDtTm": "…", "Dbtr": "Mohammed Rafiq", "Cdtr": "Ayesha Begum", "IntrBkSttlmAmt": {"Ccy": "BDT", "Value": "32603.20"} }
   }
 }
 ```

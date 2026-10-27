@@ -9,6 +9,8 @@
   "mid_market_rate": 33.15,
   "fx_source": "Demo snapshot (production: Chainlink FX feed)",
   "sourced_at": "2026-10-24T00:00:00Z",
+  "platform_fee_source": 2.0,
+  "platform_fee_note": "xPay flat sender fee charged in source currency (product decision, docs/unit-economics.md); # SOURCE NEEDED: confirmed fee schedule",
   "govt_incentive_rate": 0.025,
   "govt_incentive_note": "Bangladesh Bank SME & Remittance Department circulars: 2.5% cash incentive on formal remittance",
   "rails": [

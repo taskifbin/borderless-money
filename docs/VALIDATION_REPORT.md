@@ -38,9 +38,9 @@ Total test count: **111 tests across 6 suites, all passing.**
 
 | KPI | Measured | Basis |
 | :--- | ---: | :--- |
-| Net-receive uplift vs SWIFT | +3.26% | corridor math, AED 1,000 (৳33,488.80 vs ৳32,432.40) |
+| Net-receive uplift vs SWIFT | +3.05% | corridor math, AED 1,000 (৳33,423.20 best incl. xPay fee vs ৳32,432.40 legacy SWIFT) |
 | Intent accuracy (en/bn/ar) | 100% | 49-utterance curated benchmark |
-| p95 quote latency (engine) | 9.6 ms | 20 timed in-process quote runs |
+| p95 quote latency (engine) | live at `GET /metrics` | 20 timed in-process quote runs (machine-dependent; endpoint is the source of truth) |
 | Compliance false-positive hold rate | 0.0% | curated clear-name benchmark |
 | OFAC screening recall | 100% | curated true-positive benchmark |
 

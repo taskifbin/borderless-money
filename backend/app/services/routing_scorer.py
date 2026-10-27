@@ -13,6 +13,12 @@ a route can only win if it has complete pricing. A route with missing fee
 data is flagged `eligibility.eligible=false, reason="missing_fee_data"`, gets
 NO net/EV figures (never a silently-zeroed fee) and can never win. All math
 is exact Decimal (see money.py); floats appear only as display serialization.
+
+Fee composition: every route's sender cost is rail fee + last-mile fee + the
+corridor's platform fee (xPay's own flat sender fee, `platform_fee_source` in
+the config; 0 if absent). The composition travels with each route as
+`fee_source_components` so the platform fee is an explicit line item, never
+buried inside a single number.
 """
 from functools import lru_cache
 
@@ -38,6 +44,7 @@ def score_routes(amount_source, payout_method: str = "BKASH",
     src_ccy = corridor["source_currency"]
     dest_ccy = corridor["dest_currency"]
     amount = D(amount_source)
+    platform_fee = D(corridor.get("platform_fee_source", 0))
 
     scored: list[dict] = []
     for rail in corridor["rails"]:
@@ -47,6 +54,9 @@ def score_routes(amount_source, payout_method: str = "BKASH",
         eligible = bool(rail.get("incentive_eligible", True))
         lm_fee, extra_h, succ = corridor["last_mile"][payout_method][rail_name]
         rail_fee = rail.get("fee_source")  # absent/None → incomplete pricing
+        # rail + last-mile only: the platform fee is passed to the engine
+        # separately (platform_fee_source) so it is added exactly once and
+        # stays a visible line item.
         fee_total = None if rail_fee is None else D(rail_fee) + D(lm_fee)
         hours = rail["hours"] + extra_h
         success = D(rail["success_rate"]) * D(succ)
@@ -67,7 +77,13 @@ def score_routes(amount_source, payout_method: str = "BKASH",
             "fx_rate": to_number(D(rail["fx"])),
             "mid_market_rate": mid,
             "spread_bdt_per_aed": to_number(quantize(D(mid) - D(rail["fx"]), dest_ccy)),
-            "fee_aed": to_number(priced["values"]["fee_source"]) if fee_total is not None else None,
+            "fee_aed": to_number(D(fee_total) + platform_fee) if fee_total is not None else None,
+            "platform_fee_source": to_number(platform_fee),
+            "fee_source_components": {
+                "rail_fee_source": to_number(D(rail_fee)) if rail_fee is not None else None,
+                "last_mile_fee_source": to_number(D(lm_fee)),
+                "platform_fee_source": to_number(platform_fee),
+            },
             "settlement_time_hrs": hours,
             "success_rate": float(success.quantize(_SUCCESS_PRECISION, rounding=ROUND_HALF_UP)),
             "incentive_eligible": eligible,
@@ -89,6 +105,7 @@ def score_routes(amount_source, payout_method: str = "BKASH",
                 amount, rail["fx"], fee_total, route=name, settlement_time_hrs=hours,
                 currency_source=src_ccy, dest_currency=dest_ccy,
                 govt_incentive_rate=corridor["govt_incentive_rate"] if eligible else 0.0,
+                platform_fee_source=platform_fee,
             ),
         }
         route["breakdown"]["incentive_eligible"] = eligible
