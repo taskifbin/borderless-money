@@ -70,3 +70,20 @@ didn't touch it; main's superset survives, then gains the redesign's keys).
 Post-merge: Phase 2 checklist + live browser run (en/bn, 375 px, scenarios,
 F8 states), full backend suite (126 tests) + sanctions/RAG evals + frontend
 build, then push the branch and merge PR #2 with a merge commit.
+
+## Phase 2 — re-audit results (merged tree, verified live 2026-10-29)
+
+Production build (`next start`) + backend on :8000, real browser:
+
+| Check | Result |
+| :--- | :--- |
+| 2.1 F2 no live-data claim | ✅ sweep `live corridor / active rail feed / live payout rails / real-time push` → zero hits; "Demo corridor - simulated quotes" badge present (neutral gray, no pulsing "live" look) |
+| 2.2 F1 is_best pre-select | ✅ default route = backend `is_best` (Stellar Hybrid, ৳33,423.20) even though Multi-hop shows a higher raw net (৳33,469.17) — exactly the teaser-rail trap the client-side sort used to fall for; Recommended badge + ranked-by label present; 3 `is_best` refs in page.tsx |
+| 2.3 F3 conditional banner | ✅ `?scenario=fuzzy_review` → FUZZY_MATCH_REVIEW + "Compliance hold" (no "Compliance cleared"); default quote → "Compliance cleared" only on CLEAR |
+| 2.4 F4 stats | ✅ 2.5% / 1 hr / 60 min (config-bound); no ~2 hr / 100% / 10 min |
+| 2.5 F5 i18n | ✅ EN+BN verified on home, quote, receipt, /roi; no EN leaks on the Bangla quote screen; lang toggle restored on quote/review/receipt headers (redesign had dropped it from the quote screen); Bengali font stack re-added to globals.css + `:lang(bn)` |
+| 2.6 F9 brand/fixture | ✅ manus-routes.json absent (main's deletion won); brand xPay consistent; the one "Malaysia" string in code is a comment explaining the removal |
+| 2.7 F7/F8/F6 | ✅ both scenario URLs flip the banner (fuzzy → hold, high_risk → "Compliance review required"); API-down + Retry + "Waking up…" logic intact (api.ts auto-merge kept F8); 375 px: zero horizontal overflow on home + quote screens after `min-w-0` fixes (the Bangla select options' intrinsic width had blown up the auto grid track) |
+| Fabrications | ✅ ChainTrail shows honest "···" for prev/next (no block numbers); AgentPipeline says "simulated payout rails"; "Cryptographic Quote Lock" → "Quote lock" with honest description |
+
+Merge commit: `b32cbee`.
