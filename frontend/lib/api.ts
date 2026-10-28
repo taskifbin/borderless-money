@@ -65,3 +65,8 @@ export const fmtAED = (v: number | null | undefined) =>
   v == null
     ? "—"
     : `AED ${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+export const fmtCurrency = (v: number | null | undefined, cur = "AED") =>
+  v == null
+    ? "—"
+    : `${cur} ${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
