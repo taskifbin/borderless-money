@@ -1,5 +1,11 @@
 # xPay deployment config (Render blueprint).
 #
+# STATUS (2026-10-28): BLOCKED — no deploy credentials available in this
+# environment, so no live Render blueprint deploy was performed. The blueprint
+# below is complete and ready for a human to deploy in ~10 minutes by
+# following the VERIFY steps. The demo runs fully locally: backend on :8000,
+# frontend on :3000 (verified — see docs/manual-qa.md).
+#
 # VERIFY (human step — this repo cannot hold credentials):
 #   1. Rename the GitHub repo to `xpay` (Settings -> General), then point the
 #      remote: git remote set-url origin git@github.com:taskifbin/xpay.git
