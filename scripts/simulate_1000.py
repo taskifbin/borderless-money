@@ -67,14 +67,14 @@ def main() -> None:
         amount = D(max(200, min(5000, round(rng.lognormvariate(6.8, 0.55)))))
         payout = pick_payout(rng)
         routes = routing_scorer.score_routes(amount, payout)
-        priced = [r for r in routes if r["expected_value_bdt"] is not None]
+        priced = [r for r in routes if r["reliability_adjusted_net"] is not None]
         if not priced:
             continue
 
         current = D(legacy_swift_net(amount))
         xpay = D(str(routes[0]["breakdown"]["true_net_receive_bdt"]))
 
-        fee_only_route = min(priced, key=lambda r: D(str(r["fee_aed"])))
+        fee_only_route = min(priced, key=lambda r: D(str(r["fee_total_source"])))
         fee_only = D(str(fee_only_route["breakdown"]["true_net_receive_bdt"]))
 
         cost_only_route = max(
