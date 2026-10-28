@@ -152,6 +152,7 @@ const en = {
   noIncentive: "no incentive",
   bonusTag: "✓ 2.5% bonus",
   noBonusTag: "— No bonus",
+  forfeitsBonus: (amount: string) => `— forfeits ~${amount} bonus`,
   // ——— review screen (F5) ———
   eyebrowReview: "Manual review",
   carefulPause: "A careful pause.",
@@ -359,6 +360,7 @@ const bn: typeof en = {
   noIncentive: "প্রণোদনা নেই",
   bonusTag: "✓ ২.৫% বোনাস",
   noBonusTag: "— বোনাস নেই",
+  forfeitsBonus: (amount) => `— ~${amount} বোনাস বাদ যাবে`,
   // ——— রিভিউ স্ক্রিন ———
   eyebrowReview: "ম্যানুয়াল পর্যালোচনা",
   carefulPause: "একটি সতর্ক বিরতি।",
