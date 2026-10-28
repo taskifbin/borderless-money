@@ -117,7 +117,7 @@ and the receipt shows exactly why, line by line.
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                   DATA & INTEGRATION LAYER                       │
-│  ⛓️ Horizon testnet probe     │ 🔗 FX feeds │ 📜 OFAC (local)    │
+│  ⛓️ Simulated settlement (testnet-ready) │ 🔗 FX feeds │ 📜 OFAC (local) │
 │  🏦 bKash/Nagad mock payout │ 🗄️ PostgreSQL schema + demo store │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -303,8 +303,11 @@ Full request/response JSON: [docs/api-contracts.md](docs/api-contracts.md)
 | KPI | Measured | How |
 | :--- | ---: | :--- |
 | Net-receive uplift vs SWIFT | **+3.05%** | corridor math, AED 1,000 (৳33,423.20 best route incl. xPay's AED 2 fee vs ৳32,432.40 legacy SWIFT) |
+| Uplift at 1.5% anchor spread (pessimistic) | **+2.59%** (table range +2.59–3.63%) | anchor-pricing sensitivity, [docs/stellar-sensitivity.md](docs/stellar-sensitivity.md) |
+| 1,000-transfer simulation uplift | **+3.53% mean** (1.57–11.08%) | EV-ranked vs current channel, `reports/simulation_1000.json` |
+| Manual-review volume | **8 / 1,000 transfers** | 500 synthetic common-name transfers, `reports/review_volume.json` |
 | Intent accuracy (en/bn/ar) | **100%** | 49-utterance curated benchmark (`data/intent_eval.json`) |
-| p95 quote latency | **~2–3 ms engine / 21.2 ms end-to-end HTTP** | engine: `GET /metrics` · end-to-end: `reports/load_test.txt` (300 POST /api/agent/quote, loopback) |
+| p95 quote latency | **21.2 ms end-to-end HTTP** | `reports/load_test.txt` (300 POST /api/agent/quote, loopback) |
 | Compliance false-positive hold rate | **0.0%** | 21 labeled clear names (`data/sanctions_eval.json`) |
 | OFAC screening recall | **100%** | 11 labeled true positives (exact/leet after normalization; alias-only matches are held for review, not blocked) (`data/sanctions_eval.json`) |
 
