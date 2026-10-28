@@ -2,21 +2,38 @@ import type { AgentStateResponse, DemoScenario } from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "";
 
-async function post<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+async function post<T>(path: string, body: unknown, onSlow?: () => void): Promise<T> {
+  // Free-tier cold starts can take well over 5s; onSlow lets the UI show a
+  // "waking up" state while the request is still in flight.
+  let slowTimer: ReturnType<typeof setTimeout> | undefined;
+  if (onSlow) slowTimer = setTimeout(onSlow, 5000);
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    if (slowTimer) clearTimeout(slowTimer);
+    // fetch only throws on network-level failure (server down/asleep/DNS)
+    throw new Error("API_UNREACHABLE");
+  }
+  if (slowTimer) clearTimeout(slowTimer);
   if (!res.ok) {
-    let detail = res.statusText;
+    let detail: string | null = null;
     try {
       const err = await res.json();
-      detail = err.detail ?? detail;
+      detail = err.detail ?? null;
     } catch {
-      /* keep statusText */
+      /* no JSON body */
     }
-    throw new Error(detail);
+    if (detail) throw new Error(detail);
+    // A 5xx with no error detail means the backend itself was not reached
+    // (local proxy ECONNREFUSED, gateway 502/503, or an unhandled crash) —
+    // surface the friendly "server may be asleep" message, not "Internal Server Error".
+    if (res.status >= 500) throw new Error("API_UNREACHABLE");
+    throw new Error(res.statusText);
   }
   return res.json() as Promise<T>;
 }
@@ -30,8 +47,8 @@ export interface QuoteParams {
   demo_scenario?: DemoScenario;
 }
 
-export function getQuote(params: QuoteParams): Promise<AgentStateResponse> {
-  return post<AgentStateResponse>("/api/agent/quote", params);
+export function getQuote(params: QuoteParams, onSlow?: () => void): Promise<AgentStateResponse> {
+  return post<AgentStateResponse>("/api/agent/quote", params, onSlow);
 }
 
 export interface ExecuteParams extends QuoteParams {
@@ -44,8 +61,8 @@ export interface ExecuteParams extends QuoteParams {
   settlement_outcome?: "COMPLETED" | "TIMEOUT" | "FAILED";
 }
 
-export function executeTransfer(params: ExecuteParams): Promise<AgentStateResponse> {
-  return post<AgentStateResponse>("/api/agent/execute", params);
+export function executeTransfer(params: ExecuteParams, onSlow?: () => void): Promise<AgentStateResponse> {
+  return post<AgentStateResponse>("/api/agent/execute", params, onSlow);
 }
 
 /** Fetch a persisted quote with its live expiry status. */
