@@ -23,3 +23,4 @@ Open items stay here until resolved — they are never silently dropped.
 | :--- | :--- | :--- | :--- | :--- |
 | 2026-10-25 | **NRB advisor** — Bangladesh Bank regulatory note (incentive eligibility + RaaS licensing question) | captain | 2026-10-30 | **OPEN — do not resolve without the actual advisor response**; slot for the signed note: `docs/nrb/advisor-note.md` |
 | 2026-10-28 | Provider rate+fee sourcing (Wise / Remitly / Al Ansari) + World Bank RPW row — blocked on interactive-tool pages and a 403; exact human-fill URLs in `data/sources.md` | team | post-submission | **OPEN (blocked)** — do not invent the numbers |
+| 2026-10-28 | **LLM fallback demo** (`engines.llm_fallback`) — blocked: no LLM API key exists in this environment; the deterministic parser is the shipped default and the frontend shows "Deterministic quote engine" accordingly | captain | post-submission | **OPEN (blocked)** — wire `XPAY_LLM_API_KEY` when available; do not fake the health flag |
