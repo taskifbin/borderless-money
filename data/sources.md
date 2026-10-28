@@ -36,6 +36,16 @@ after submission.
 | Provider C rate+fee (Al Ansari Exchange) | blocked — /en/rates 404s; use their Online Currency Converter | https://alansariexchange.com/en/currency-converter |
 | World Bank UAE→BD average | blocked — remittanceprices.worldbank.org returns 403 to automated fetch; download the RPW Excel manually | https://remittanceprices.worldbank.org/en/data |
 
+## RAG corpus traceability (verified 2026-10-28)
+
+Every passage in `backend/rag/corpus/*.md` carries a `Source:` line naming a
+real organization + domain (bb.org.bd, ofac.treasury.gov, iso20022.org) and is
+labeled **demo excerpt**. Passages cite departments and policy topics, never
+invented circular numbers. `backend/evals/eval_rag.py` enforces both properties
+mechanically: every retrieved passage's domain must be in its allow-list or the
+eval exits 1. Latest run: **hit@2 8/8 = 100%, all citations resolve to allowed
+domains** (`make eval-rag`, exit 0).
+
 ## Corridor field table
 
 | Corridor | Field | Current value | Source | As of | Status |
