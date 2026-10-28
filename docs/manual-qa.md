@@ -11,6 +11,8 @@ What was verified by real browser automation on 2026-10-28 (production build,
 | 375 px class viewport: quote screen (Bangla, 5 routes) | **no horizontal overflow**, headline ৳33,423.20 + route cards stack correctly |
 | Bangla rendering (F5) | home, send card, quote screen, and /roi all render Bangla; `document.documentElement.lang == "bn"` after toggling; Bengali conjuncts render correctly (no tofu) on both pages |
 | /roi reads persisted language | switching to বাং on `/` then opening `/roi` renders the calculator fully in Bangla |
+| `?scenario=fuzzy_review` (F7) | quote decision becomes `FUZZY_MATCH_REVIEW` and the quote screen shows the amber **"Compliance hold — manual review required"** banner — verified live |
+| `?scenario=high_risk` (F7) | quote decision becomes `HIGH_RISK` and the quote screen shows the **"Compliance review required"** banner — verified live |
 
 ## Requires device verification (cannot be automated here)
 
