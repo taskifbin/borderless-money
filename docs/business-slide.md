@@ -26,7 +26,7 @@ alone leaves most of that on the table.
 | Cost per transfer | **AED 0.16** (infra 0.06 · FX 0.03 · screening 0.02 · settlement/audit 0.05) | [docs/unit-economics.md](unit-economics.md) |
 | Gross margin (consumer fee) | **AED 3.34 / 95.4%** | [docs/unit-economics.md](unit-economics.md) |
 | Sanctions screening | **100% recall, 0% false-hold** on the 58-case benchmark | `make eval-sanctions` · [docs/kpis.md](kpis.md) |
-| Review workload | **8 manual reviews / 1,000 transfers** | `reports/review_volume.json` |
+| Review workload | **0 / 1,000 transfers** on the local list; **40 / 1,000** vs the real 19,484-entry OFAC SDN file | `reports/review_volume.json`; real-list run 2026-10-28 — `data/sources.md` |
 | Quote latency | **21.2 ms p95 end-to-end HTTP** | `reports/load_test.txt` |
 | Market size | **$35.56B** FY2025-26 remittances to BD; **$4.58B** UAE corridor | `# SOURCE NEEDED: Bangladesh Bank release URL + date` — see [data/sources.md](../data/sources.md) before quoting on camera |
 

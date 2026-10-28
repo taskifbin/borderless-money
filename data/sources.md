@@ -14,6 +14,16 @@ Status vocabulary:
 | `PRODUCT-DECISION` | xPay's own commercial choice, not an external fact |
 | `UNVERIFIED` | Fixture assumption — `# SOURCE NEEDED` before any public use |
 
+## Real OFAC SDN list (verified 2026-10-28)
+
+| Item | Value |
+| :--- | :--- |
+| File | OFAC Specially Designated Nationals list, full CSV |
+| URL | https://www.treasury.gov/ofac/downloads/sdn.csv |
+| Retrieved | 2026-10-28 |
+| Size | 19,484 data rows (5.7 MB — not committed; re-download to reproduce) |
+| One-off measurement | 100-party sample of the `review_volume.py` seeded pool screened against the full file with the production matcher logic (pre-normalized entries): **4 reviews / 100 parties = 40 / 1,000** — fuzzy collisions with real entries (e.g. "Rahim Hossain" jw 0.871, "Shamim Alam" jw 0.848), no exact hits, no blocks. This is the honest operational-cost planning number; the 10-entry local sample understates it. |
+
 ## Live reference check (2026-10-28 — network-sourced)
 
 | Field | Live value | Source URL | Date accessed | Status |

@@ -37,6 +37,10 @@ THRESHOLDS = {
     "review_full_name": 0.90,   # plain Jaro on normalized full names -> REVIEW
     "review_single_token": 0.90,  # single-token query vs best listed token -> REVIEW
     "token_match": 0.92,        # two tokens considered "the same" for coverage
+    "review_token_floor": 0.80,  # jw-branch REVIEW additionally requires every
+                                 # meaningful query token (len>=2) to be
+                                 # fuzzy-close (JW >= this) to some entry token
+                                 # — see _token_floor_ok
 }
 
 _ALIAS = {
@@ -151,6 +155,26 @@ def _coverage(query_tokens: list[str], entry_tokens: list[str]) -> tuple[float, 
     return covered(entry_tokens, query_tokens), covered(query_tokens, entry_tokens)
 
 
+def _token_floor_ok(query_tokens: list[str], entry_tokens: list[str]) -> bool:
+    """Every meaningful query token (len >= 2, so initials like 'U.' are
+    exempt) must be fuzzy-close to some token on the list entry.
+
+    Separates real spelling variants — Ahmad/Ahmed or Alom/Alam score ~0.87 —
+    from names that share only a very common forename, e.g. 'Mohammad Pal' /
+    'Mohammad Mia' vs listed 'Mohammad Salim' (pal↔salim ≈ 0.5). Full-name
+    Jaro alone cannot tell these apart (both land at 0.90+ because of the
+    shared 'mohammad' prefix), but only the first kind deserves a review.
+    Query-side only: an ABBREVIATED query ('Nasir U. Chaudhury' — entry token
+    'uddin' absent) still reviews, because what the query does say is genuine."""
+    floor = THRESHOLDS["review_token_floor"]
+    for t in query_tokens:
+        if len(t) < 2:
+            continue
+        if max((jaro_winkler(t, u) for u in entry_tokens), default=0.0) < floor:
+            return False
+    return True
+
+
 def _load_list() -> list[dict]:
     try:
         with open(_DATA_FILE, "r", encoding="utf-8") as f:
@@ -177,7 +201,7 @@ def screen_party(name: str, role: str, entries: list[dict] | None = None) -> dic
     def full_score(norm_entry: str, canonical_entry: str) -> float:
         return max(jaro(norm_query, norm_entry), jaro(canonical_query, canonical_entry))
 
-    best = {"entry": None, "norm": "", "norm_orig": "", "jw": 0.0, "entry_cov": 0.0, "query_cov": 0.0}
+    best = {"entry": None, "norm": "", "norm_orig": "", "jw": 0.0, "entry_cov": 0.0, "query_cov": 0.0, "entry_tokens": []}
     best_single_token = 0.0
     for entry in list_entries:
         norm_entry, canonical_entry = normalize_parts(entry["name"])
@@ -186,7 +210,8 @@ def screen_party(name: str, role: str, entries: list[dict] | None = None) -> dic
         entry_cov, query_cov = _coverage(query_tokens, entry_tokens)
         if (score, entry_cov) > (best["jw"], best["entry_cov"]):
             best = {"entry": entry["name"], "norm": canonical_entry, "norm_orig": norm_entry,
-                    "jw": score, "entry_cov": entry_cov, "query_cov": query_cov}
+                    "jw": score, "entry_cov": entry_cov, "query_cov": query_cov,
+                    "entry_tokens": entry_tokens}
         for tok in entry_tokens:
             best_single_token = max(best_single_token, jaro_winkler(norm_query, tok))
 
@@ -219,10 +244,18 @@ def screen_party(name: str, role: str, entries: list[dict] | None = None) -> dic
         # never hard-block a single-token or partial match
         status = ("FUZZY_MATCH_REVIEW" if best_single_token >= THRESHOLDS["review_single_token"] else "CLEAR")
         why = f"single-token query; best listed-token JW {best_single_token:.3f} (across all entries)"
-    elif best["entry_cov"] >= 0.99 or best["jw"] >= THRESHOLDS["review_full_name"]:
+    elif best["entry_cov"] >= 0.99 or (
+        best["jw"] >= THRESHOLDS["review_full_name"]
+        and _token_floor_ok(query_tokens, best["entry_tokens"])
+    ):
         status = "FUZZY_MATCH_REVIEW"
-        why = (f"full-name Jaro {best['jw']:.3f}, list-name coverage "
-               f"{best['entry_cov']:.0%} (added/variant tokens)")
+        if best["entry_cov"] >= 0.99:
+            why = (f"full-name Jaro {best['jw']:.3f}, list-name coverage "
+                   f"{best['entry_cov']:.0%} (added/variant tokens)")
+        else:
+            why = (f"full-name Jaro {best['jw']:.3f} with every meaningful token "
+                   f"fuzzy-close on both sides (token floor "
+                   f"{THRESHOLDS['review_token_floor']:.2f}) — spelling-variant match")
     else:
         status = "CLEAR"
         why = f"full-name Jaro {best['jw']:.3f} below review threshold"

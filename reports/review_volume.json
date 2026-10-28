@@ -4,47 +4,9 @@
   "seed": 7,
   "data_note": "synthetic name combinations from common Bangladeshi name pools; sanctions list is the 10-entry local sample — re-measure against the official SDN file before any production claim",
   "decisions": {
-    "CLEAR": 496,
-    "FUZZY_MATCH_REVIEW": 4
+    "CLEAR": 500
   },
-  "reviews_per_1000_transfers": 8.0,
-  "review_share_pct": 0.8,
-  "flagged_examples": [
-    {
-      "transfer": 324,
-      "sender": "Mohammad Pal",
-      "recipient": "Rahima Roy",
-      "party": "sender",
-      "status": "FUZZY_MATCH_REVIEW",
-      "matched": "Mohammad Salim",
-      "score": 0.9008
-    },
-    {
-      "transfer": 381,
-      "sender": "Mohammad Mia",
-      "recipient": "Sukonya Uddin",
-      "party": "sender",
-      "status": "FUZZY_MATCH_REVIEW",
-      "matched": "Mohammad Salim",
-      "score": 0.9246
-    },
-    {
-      "transfer": 439,
-      "sender": "Fahim Pal",
-      "recipient": "Mohammad Pal",
-      "party": "recipient",
-      "status": "FUZZY_MATCH_REVIEW",
-      "matched": "Mohammad Salim",
-      "score": 0.9008
-    },
-    {
-      "transfer": 457,
-      "sender": "Imran Barmon",
-      "recipient": "Mohammad Mia",
-      "party": "recipient",
-      "status": "FUZZY_MATCH_REVIEW",
-      "matched": "Mohammad Salim",
-      "score": 0.9246
-    }
-  ]
+  "reviews_per_1000_transfers": 0.0,
+  "review_share_pct": 0.0,
+  "flagged_examples": []
 }
