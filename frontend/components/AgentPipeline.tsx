@@ -1,67 +1,71 @@
 "use client";
 
 import { useState } from "react";
+import type { STRINGS } from "@/lib/i18n";
 import type { AgentStateResponse } from "@/lib/types";
+
+type T = (typeof STRINGS)["en"];
 
 export interface AgentPipelineProps {
   quote?: AgentStateResponse | null;
   busy?: boolean;
   activeStep?: number;
+  t: T;
 }
 
-export default function AgentPipeline({ quote, busy }: AgentPipelineProps) {
+export default function AgentPipeline({ quote, busy, t }: AgentPipelineProps) {
   const [showLogs, setShowLogs] = useState(false);
 
   const steps = [
     {
       id: "intent",
       num: "01",
-      title: "Intent & Corridor Parser",
+      title: t.pipeline.intentTitle,
       desc: quote?.parsed_intent
         ? `${quote.parsed_intent.amount} ${quote.parsed_intent.source_currency} → ${quote.parsed_intent.dest_currency} via ${quote.parsed_intent.payout_method || "optimal rail"}`
-        : "Extracts amounts, corridor, recipient handle, and urgency from text or voice",
+        : t.pipeline.intentIdle,
       status: busy ? "processing" : quote ? "completed" : "idle",
       badge: quote?.parsed_intent?.confidence
-        ? `${Math.round(quote.parsed_intent.confidence * 100)}% confidence`
+        ? `${Math.round(quote.parsed_intent.confidence * 100)}%`
         : null,
     },
     {
       id: "routing",
       num: "02",
-      title: "Multi-Rail Scorer & Ranking",
+      title: t.pipeline.routingTitle,
       desc: quote?.routes?.length
-        ? `Ranked ${quote.routes.length} live payout rails by true net receive amount`
-        : "Scans bank networks, mobile wallets, and liquidity pools for best FX & lowest spread",
+        ? t.pipeline.routingDesc(quote.routes.length)
+        : t.pipeline.routingIdle,
       status: busy ? "processing" : quote?.routes ? "completed" : "idle",
-      badge: quote?.routes?.length ? `${quote.routes.length} rails analyzed` : null,
+      badge: quote?.routes?.length ? `${quote.routes.length}` : null,
     },
     {
       id: "incentive",
       num: "03",
-      title: "Incentive Maximizer (Bangladesh Bank)",
-      desc: "Automatically verifies 2.5% formal-channel government cash remittance subsidy eligibility",
+      title: t.pipeline.incentiveTitle,
+      desc: t.pipeline.incentiveIdle,
       status: busy ? "processing" : quote ? "completed" : "idle",
-      badge: "+2.5% govt cash subsidy",
+      badge: t.pipeline.incentiveBadge,
     },
     {
       id: "compliance",
       num: "04",
-      title: "Sanctions & Graph Screening",
+      title: t.pipeline.complianceTitle,
       desc: quote?.compliance
-        ? `OFAC status: ${quote.compliance.ofac_match_status || "CLEARED"} · Risk: ${quote.risk?.risk_band || "LOW"}`
-        : "Predictive AML screening and graph sanctions verification before quote issuance",
+        ? `OFAC: ${quote.compliance.ofac_match_status || "-"} · ${quote.risk?.risk_band || "-"}`
+        : t.pipeline.complianceIdle,
       status: busy ? "processing" : quote?.compliance ? "completed" : "idle",
-      badge: quote?.decision === "CLEAR" ? "Screening Passed" : quote?.decision ? String(quote.decision) : null,
+      badge: quote?.decision === "CLEAR" ? t.pipeline.compliancePassed : quote?.decision ? String(quote.decision) : null,
     },
     {
       id: "quote_binding",
       num: "05",
-      title: "Cryptographic Quote Lock",
+      title: t.pipeline.bindingTitle,
       desc: quote?.quote_id
-        ? `Immutable Quote ID #${quote.quote_id.slice(0, 8)}… signed for execution`
-        : "Guarantees exact payout rate and prevents slippage or unauthorized fee injection",
+        ? t.pipeline.bindingDesc(quote.quote_id.slice(0, 8))
+        : t.pipeline.bindingIdle,
       status: busy ? "processing" : quote?.quote_id ? "completed" : "idle",
-      badge: quote?.quote_id ? "Bound & Locked" : null,
+      badge: quote?.quote_id ? t.pipeline.bindingBadge : null,
     },
   ];
 
@@ -74,16 +78,16 @@ export default function AgentPipeline({ quote, busy }: AgentPipelineProps) {
             <span className={`relative inline-flex h-3 w-3 rounded-full ${busy ? "bg-amber-500" : "bg-emerald-500"}`} />
           </span>
           <h3 className="text-sm font-bold text-white tracking-wide">
-            Autonomous Remittance Agent Pipeline
+            {t.pipeline.title}
           </h3>
         </div>
         <span className="text-xs px-2.5 py-1 rounded-full border border-white/10 bg-white/5 text-slate-300 font-mono">
-          {busy ? "Evaluating..." : quote ? "Ready" : "Standby"}
+          {busy ? t.pipeline.evaluating : quote ? t.pipeline.ready : t.pipeline.standby}
         </span>
       </div>
 
       <div className="mt-4 space-y-3">
-        {steps.map((step, idx) => {
+        {steps.map((step) => {
           const isDone = step.status === "completed";
           const isBusy = step.status === "processing";
 
@@ -141,8 +145,8 @@ export default function AgentPipeline({ quote, busy }: AgentPipelineProps) {
             onClick={() => setShowLogs(!showLogs)}
             className="flex items-center justify-between w-full text-xs font-semibold text-amber-400 hover:text-amber-300 transition"
           >
-            <span>AI Agent Reasoning Logs ({quote.explanation_log.length})</span>
-            <span>{showLogs ? "▲ Hide" : "▼ Show"}</span>
+            <span>{t.pipeline.logsLabel(quote.explanation_log.length)}</span>
+            <span>{showLogs ? `▲ ${t.pipeline.hide}` : `▼ ${t.pipeline.show}`}</span>
           </button>
           {showLogs && (
             <div className="mt-2.5 p-3 rounded-xl bg-black/40 border border-white/10 max-h-48 overflow-y-auto space-y-1.5 font-mono text-[11px] text-slate-300">

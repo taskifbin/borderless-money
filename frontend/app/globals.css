@@ -18,10 +18,12 @@
 
 @layer base {
   * { box-sizing: border-box; }
+  /* Bengali: per-glyph fallback must land on a real Bangla font (F5 font check) */
   html {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: Inter, "Noto Sans Bengali", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Bengali UI", "Bangla MN", "Vrinda", Arial, sans-serif;
     scroll-behavior: smooth;
   }
+  :lang(bn) { line-height: 1.65; }
   body {
     margin: 0;
     background-color: #080d16;

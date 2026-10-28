@@ -9,7 +9,14 @@ export default function ChainTrail({
 }: {
   hash: string;
   network: string;
-  labels: { title: string; prev: string; yours: string; next: string };
+  labels: {
+    title: string;
+    prev: string;
+    yours: string;
+    next: string;
+    copyHash?: string;
+    copied?: string;
+  };
 }) {
   const [copied, setCopied] = useState(false);
   const shortHash = hash ? `${hash.slice(0, 8)}…${hash.slice(-6)}` : "—";
@@ -22,9 +29,9 @@ export default function ChainTrail({
   };
 
   const blocks = [
-    { label: labels.prev, value: "Block #742918", accent: false },
+    { label: labels.prev, value: "···", accent: false },
     { label: labels.yours, value: shortHash, accent: true },
-    { label: labels.next, value: "Block #742920", accent: false },
+    { label: labels.next, value: "···", accent: false },
   ];
 
   return (
@@ -46,7 +53,7 @@ export default function ChainTrail({
               onClick={copyHash}
               className="text-[10px] text-slate-400 hover:text-white transition px-2 py-0.5 rounded border border-white/10 bg-white/5"
             >
-              {copied ? "✓ Copied" : "Copy Hash"}
+              {copied ? labels.copied ?? "Copied" : labels.copyHash ?? "Copy hash"}
             </button>
           )}
         </div>

@@ -10,7 +10,6 @@ Project structure:
 - `frontend/app/layout.tsx`: metadata and document shell.
 - `frontend/components/`: reusable existing flow, microphone, and blockchain trail components.
 - `frontend/lib/`: existing API contracts, formatting helpers, types, and translations.
-- `frontend/public/manus-routes.json`: route manifest for `/` and `/roi`.
 
 ## Design
 

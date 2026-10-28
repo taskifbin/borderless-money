@@ -6,8 +6,11 @@
  * (which has hand-computed test coverage). Every output is a MODELED ESTIMATE
  * from the user's assumptions — nothing here is measured. Recipient benefit is
  * shown separately and is NEVER counted as vendor revenue.
+ *
+ * Merged layout: redesign dark styling + main's i18n (en/bn) strings.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { STRINGS, applyDocLang, savedLang } from "@/lib/i18n";
 
 type ScenarioKey = "conservative" | "base" | "optimistic";
 
@@ -71,13 +74,13 @@ function compute(i: Inputs, key: ScenarioKey) {
   let breakevenNote: string;
   if (fixedDrag === 0) {
     breakeven = 0;
-    breakevenNote = "no fixed costs or fees to recover";
+    breakevenNote = "none";
   } else if (savingPerAdopted <= 0 || eligibility === 0 || adoption === 0) {
     breakeven = null;
-    breakevenNote = "per-transfer saving does not exceed the per-transfer price (or zero eligibility/adoption)";
+    breakevenNote = "negative";
   } else {
     breakeven = ceil(fixedDrag / (eligibility * adoption * savingPerAdopted));
-    breakevenNote = "monthly transfers needed for the switch to pay off";
+    breakevenNote = "payoff";
   }
   return {
     eligible, adopted, principalMoved, recipientBenefit, customerSavings,
@@ -116,10 +119,17 @@ function Field(props: { label: string; hint: string; value: number; onChange: (v
 }
 
 export default function RoiPage() {
+  const [lang, setLang] = useState<"en" | "bn">("en");
   const [i, setI] = useState<Inputs>(DEFAULTS);
   const [active, setActive] = useState<ScenarioKey>("base");
   const r = useMemo(() => compute(i, active), [i, active]);
   const set = (k: keyof Inputs) => (v: number) => setI((p) => ({ ...p, [k]: v }));
+  const t = STRINGS[lang];
+  useEffect(() => { const l = savedLang(); setLang(l); applyDocLang(l); }, []);
+  const breakevenNoteText =
+    r.breakevenNote === "none" ? t.roi.breakevenNone
+    : r.breakevenNote === "negative" ? t.roi.breakevenNegative
+    : t.roi.breakevenPayoff;
 
   return (
     <div className="xpay-shell min-h-screen text-slate-100">
@@ -128,35 +138,33 @@ export default function RoiPage() {
           <a href="/" className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500 text-slate-950 font-black text-lg">
             ↗
           </a>
-          <div>
-            <span className="text-sm font-bold text-white">xPay B2B Suite</span>
-            <span className="ml-2 text-xs text-slate-400">Enterprise Remittance Intelligence</span>
-          </div>
+          <span className="text-sm font-bold text-white">{t.roi.suiteTitle}</span>
         </div>
 
         <a
           href="/"
           className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/10 transition"
         >
-          ← Return to Send Money
+          {t.roi.backToDemo}
         </a>
       </header>
 
       <main className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300 mb-3">
-            Operator Economics Model
+            {t.roi.badge}
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-white">B2B Remittance ROI Simulator</h1>
+          <h1 className="text-3xl sm:text-4xl font-black text-white">{t.roi.title}</h1>
           <p className="mt-2 text-sm text-slate-400 max-w-2xl leading-relaxed">
-            Evaluate unit economics, route savings, and gross margin for fintechs and banks routing cross-border payments via the xPay intelligent orchestrator.
+            {t.roi.lead}
+            {" "}{t.roi.formulasPrefix} <code className="rounded bg-white/10 px-1 font-mono text-xs">backend/app/services/roi.py</code> {t.roi.formulasSuffix}
           </p>
         </div>
 
         {/* Scenario Toggle */}
         <div className="mb-6 flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-[#0d1627]/80 p-2">
           <span className="px-3 text-xs font-bold uppercase tracking-wider text-slate-400">
-            Adoption Scenario:
+            {t.roi.adoptionScenario}:
           </span>
           {(Object.keys(SCENARIOS) as ScenarioKey[]).map((k) => (
             <button
@@ -168,11 +176,11 @@ export default function RoiPage() {
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              {k}
+              {t.roi.scenarios[k]}
             </button>
           ))}
           <span className="text-xs text-slate-500 ml-auto pr-3 hidden md:inline">
-            Scales adoption ×{SCENARIOS[active].adoptMult} and eligibility ×{SCENARIOS[active].eligMult}
+            {t.roi.scenarioNote(SCENARIOS[active].adoptMult, SCENARIOS[active].eligMult)}
           </span>
         </div>
 
@@ -180,22 +188,22 @@ export default function RoiPage() {
           {/* Inputs Section */}
           <section className="xpay-card p-6">
             <div className="border-b border-white/10 pb-3 mb-5">
-              <h2 className="text-base font-bold text-white">Operator Assumptions</h2>
-              <p className="text-xs text-slate-400">Customizable volume, cost basis, and pricing levers</p>
+              <h2 className="text-base font-bold text-white">{t.roi.yourAssumptions}</h2>
+              <p className="text-xs text-slate-400">{t.roi.assumptionsNote}</p>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Monthly transfers" hint="count" value={i.monthlyTransfers} onChange={set("monthlyTransfers")} min={1} />
-              <Field label="Avg principal" hint="per transfer" value={i.avgPrincipal} onChange={set("avgPrincipal")} step={50} suffix="AED" />
-              <Field label="Baseline all-in cost" hint="fees + spread today" value={i.baselinePct} onChange={set("baselinePct")} step={0.1} suffix="%" />
-              <Field label="Proposed all-in cost" hint="via optimal rails" value={i.proposedPct} onChange={set("proposedPct")} step={0.1} suffix="%" />
-              <Field label="Route eligibility share" hint="0–1" value={i.eligibilityShare} onChange={set("eligibilityShare")} step={0.05} max={1} />
-              <Field label="Adoption rate" hint="0–1" value={i.adoptionRate} onChange={set("adoptionRate")} step={0.05} max={1} />
-              <Field label="API price / transfer" hint="usage pricing" value={i.apiPricePerTx} onChange={set("apiPricePerTx")} step={0.1} suffix="AED" />
-              <Field label="API monthly fee" hint="0 = usage only" value={i.apiMonthlyFee} onChange={set("apiMonthlyFee")} step={50} suffix="AED" />
-              <Field label="Cost bearing share" hint="fraction operator pays" value={i.bearingShare} onChange={set("bearingShare")} step={0.1} max={1} />
-              <Field label="Your monthly costs" hint="infra & ops" value={i.customerMonthlyCosts} onChange={set("customerMonthlyCosts")} step={50} suffix="AED" />
-              <Field label="Vendor unit cost" hint="per tx infra" value={i.vendorVariableCostPerTx ?? 0} onChange={(v) => setI((p) => ({ ...p, vendorVariableCostPerTx: v }))} step={0.05} suffix="AED" />
+              <Field label={t.roi.fields.monthlyTransfers.label} hint={t.roi.fields.monthlyTransfers.hint} value={i.monthlyTransfers} onChange={set("monthlyTransfers")} min={1} />
+              <Field label={t.roi.fields.avgPrincipal.label} hint={t.roi.fields.avgPrincipal.hint} value={i.avgPrincipal} onChange={set("avgPrincipal")} step={50} suffix="AED" />
+              <Field label={t.roi.fields.baselineCost.label} hint={t.roi.fields.baselineCost.hint} value={i.baselinePct} onChange={set("baselinePct")} step={0.1} suffix="%" />
+              <Field label={t.roi.fields.proposedCost.label} hint={t.roi.fields.proposedCost.hint} value={i.proposedPct} onChange={set("proposedPct")} step={0.1} suffix="%" />
+              <Field label={t.roi.fields.eligibilityShare.label} hint={t.roi.fields.eligibilityShare.hint} value={i.eligibilityShare} onChange={set("eligibilityShare")} step={0.05} max={1} />
+              <Field label={t.roi.fields.adoptionRate.label} hint={t.roi.fields.adoptionRate.hint} value={i.adoptionRate} onChange={set("adoptionRate")} step={0.05} max={1} />
+              <Field label={t.roi.fields.apiPrice.label} hint={t.roi.fields.apiPrice.hint} value={i.apiPricePerTx} onChange={set("apiPricePerTx")} step={0.1} suffix="AED" />
+              <Field label={t.roi.fields.apiMonthlyFee.label} hint={t.roi.fields.apiMonthlyFee.hint} value={i.apiMonthlyFee} onChange={set("apiMonthlyFee")} step={50} suffix="AED" />
+              <Field label={t.roi.fields.bearingShare.label} hint={t.roi.fields.bearingShare.hint} value={i.bearingShare} onChange={set("bearingShare")} step={0.1} max={1} />
+              <Field label={t.roi.fields.monthlyCosts.label} hint={t.roi.fields.monthlyCosts.hint} value={i.customerMonthlyCosts} onChange={set("customerMonthlyCosts")} step={50} suffix="AED" />
+              <Field label={t.roi.fields.vendorCost.label} hint={t.roi.fields.vendorCost.hint} value={i.vendorVariableCostPerTx ?? 0} onChange={(v) => setI((p) => ({ ...p, vendorVariableCostPerTx: v }))} step={0.05} suffix="AED" />
             </div>
           </section>
 
@@ -204,27 +212,28 @@ export default function RoiPage() {
             <div>
               <div className="border-b border-white/10 pb-3 mb-5 flex items-center justify-between">
                 <div>
-                  <h2 className="text-base font-bold text-white">Modeled Economics ({active})</h2>
-                  <p className="text-xs text-slate-400">Monthly pro-forma financials & savings</p>
+                  <h2 className="text-base font-bold text-white">{t.roi.outcomeTitle(t.roi.scenarios[active])}</h2>
+                  <p className="text-xs text-slate-400">{t.roi.outcomeNote}</p>
                 </div>
                 {r.marginPct != null && (
                   <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-mono font-bold text-emerald-400">
-                    {r.marginPct}% Margin
+                    {t.roi.marginBadge(r.marginPct)}
                   </span>
                 )}
               </div>
 
               <dl className="space-y-3 text-xs">
                 {[
-                  ["Eligible Monthly Transfers", fmt(r.eligible, "")],
-                  ["Adopted via xPay Routing", fmt(r.adopted, "")],
-                  ["Total Principal Routed", fmt(r.principalMoved)],
-                  ["Gross Recipient Benefit", fmt(r.recipientBenefit)],
-                  ["Operator Cost Savings", fmt(r.customerSavings)],
-                  ["API Revenue Generated", fmt(r.apiRevenue)],
-                  ["Operator Net Benefit", fmt(r.customerNet)],
-                  ["API Effective Cost / Tx", fmt(r.costPerTx)],
-                  ["Break-even Volume", r.breakeven == null ? "—" : `${r.breakeven.toLocaleString()} transfers / mo`],
+                  [t.roi.rows.eligibleTransfers, fmt(r.eligible, "")],
+                  [t.roi.rows.adoptedTransfers, fmt(r.adopted, "")],
+                  [t.roi.rows.principalRouted, fmt(r.principalMoved)],
+                  [t.roi.rows.recipientBenefit, fmt(r.recipientBenefit)],
+                  [t.roi.rows.costSavings, fmt(r.customerSavings)],
+                  [t.roi.rows.apiRevenue, fmt(r.apiRevenue)],
+                  [t.roi.rows.netBenefit, fmt(r.customerNet)],
+                  [t.roi.rows.costPerTx, fmt(r.costPerTx)],
+                  [t.roi.rows.vendorMargin, r.marginPct == null ? "—" : `${r.marginPct}%`],
+                  [t.roi.rows.breakevenVolume, r.breakeven == null ? "—" : t.roi.transfersPerMonth(r.breakeven)],
                 ].map(([k, v]) => (
                   <div key={k} className="flex items-center justify-between gap-4 border-b border-dashed border-white/10 pb-2">
                     <dt className="text-slate-400">{k}</dt>
@@ -232,11 +241,11 @@ export default function RoiPage() {
                   </div>
                 ))}
               </dl>
-              <p className="mt-3 text-[11px] text-slate-400 italic">{r.breakevenNote}.</p>
+              <p className="mt-3 text-[11px] text-slate-400 italic">{breakevenNoteText}.</p>
             </div>
 
             <div className="mt-6 rounded-xl border border-amber-500/20 bg-amber-500/[0.06] p-3.5 text-xs text-amber-200/90 leading-relaxed">
-              <strong className="text-amber-300 font-semibold">Financial Honesty Note:</strong> All values are modeled projections based on user-supplied parameters. Recipient benefit represents funds retained by overseas families and is not treated as software platform revenue.
+              <strong className="text-amber-300 font-semibold">{t.roi.honestyTitle}</strong> {t.roi.honestyBody}
             </div>
           </section>
         </div>

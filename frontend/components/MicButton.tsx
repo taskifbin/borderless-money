@@ -16,9 +16,15 @@ interface SpeechRecognitionLike {
 export default function MicButton({
   onTranscript,
   disabled,
+  titleMic = "Fill amount by voice",
+  titleListening = "Listening",
+  titleUnsupported = "Voice input is not supported in this browser",
 }: {
   onTranscript: (text: string) => void;
   disabled?: boolean;
+  titleMic?: string;
+  titleListening?: string;
+  titleUnsupported?: string;
 }) {
   const [listening, setListening] = useState(false);
   const [unsupported, setUnsupported] = useState(false);
@@ -53,8 +59,8 @@ export default function MicButton({
         type="button"
         onClick={start}
         disabled={disabled || listening || unsupported}
-        aria-label={listening ? "Listening..." : "Fill amount by voice"}
-        title={unsupported ? "Voice input not supported in this browser" : "Click to speak amount or command"}
+        aria-label={listening ? titleListening : titleMic}
+        title={unsupported ? titleUnsupported : titleMic}
         className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-all duration-200 ${
           listening
             ? "border-amber-400 bg-amber-500/20 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.5)]"

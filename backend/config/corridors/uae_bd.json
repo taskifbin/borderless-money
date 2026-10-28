@@ -13,14 +13,47 @@
   "platform_fee_note": "xPay flat sender fee charged in source currency (product decision, docs/unit-economics.md); # SOURCE NEEDED: confirmed fee schedule",
   "_sources": {
     "note": "Field-level provenance. UNVERIFIED = current value is a fixture assumption, not sourced; do not present it as sourced on camera or in slides. See data/sources.md for the full table and the replacement workflow.",
-    "mid_market_rate": {"status": "UNVERIFIED", "as_of": null, "source_needed": "Bangladesh Bank reference rate or another citable AED->BDT mid-market source (AED is USD-pegged at 3.6725/USD); expected shape: {rate, quoted_at, url}"},
-    "rails[].fx": {"status": "UNVERIFIED", "as_of": null, "source_needed": "World Bank Remittance Prices Worldwide (UAE->BD) FX-spread section + published provider rate pages; expected shape: {provider, fx_quoted, spread_pct, quoted_at, url}"},
-    "rails[].fee_source": {"status": "UNVERIFIED", "as_of": null, "source_needed": "Published fee schedules of 3-4 named providers (bank SWIFT tariff, exchange-house rate table, wallet payout pricing); expected shape: {provider, fee, fee_basis, url}"},
-    "rails[].hours": {"status": "UNVERIFIED", "as_of": null, "source_needed": "Provider service-level statements; expected shape: {provider, hours, url}"},
-    "rails[].success_rate": {"status": "UNVERIFIED", "as_of": null, "source_needed": "No public per-rail success-rate data exists; keep labeled as an internal assumption in all materials"},
-    "last_mile[payout][rail]": {"status": "UNVERIFIED", "as_of": null, "source_needed": "bKash/Nagad/bank payout fee schedules (published partner or MFS pricing pages); expected shape: {payout, fee, url}"},
-    "govt_incentive_rate": {"status": "POLICY-CITED", "as_of": null, "source_needed": "Bangladesh Bank SME & Remittance Department circulars — # SOURCE NEEDED: exact circular number + URL before quoting on camera"},
-    "platform_fee_source": {"status": "PRODUCT-DECISION", "as_of": null, "source_needed": "Confirmed commercial fee schedule (docs/unit-economics.md)"}
+    "mid_market_rate": {
+      "status": "SOURCED-REFERENCE (live check 2026-10-28: 33.776, open.er-api.com; config value 33.15 is the Oct 24 fixture snapshot — delta disclosed in data/sources.md, re-baseline deferred past submission)",
+      "as_of": "2026-10-28",
+      "source_url": "https://open.er-api.com/v6/latest/AED",
+      "source_needed": ""
+    },
+    "rails[].fx": {
+      "status": "UNVERIFIED",
+      "as_of": null,
+      "source_needed": "World Bank Remittance Prices Worldwide (UAE->BD) FX-spread section + published provider rate pages; expected shape: {provider, fx_quoted, spread_pct, quoted_at, url}"
+    },
+    "rails[].fee_source": {
+      "status": "UNVERIFIED",
+      "as_of": null,
+      "source_needed": "Published fee schedules of 3-4 named providers (bank SWIFT tariff, exchange-house rate table, wallet payout pricing); expected shape: {provider, fee, fee_basis, url}"
+    },
+    "rails[].hours": {
+      "status": "UNVERIFIED",
+      "as_of": null,
+      "source_needed": "Provider service-level statements; expected shape: {provider, hours, url}"
+    },
+    "rails[].success_rate": {
+      "status": "UNVERIFIED",
+      "as_of": null,
+      "source_needed": "No public per-rail success-rate data exists; keep labeled as an internal assumption in all materials"
+    },
+    "last_mile[payout][rail]": {
+      "status": "UNVERIFIED",
+      "as_of": null,
+      "source_needed": "bKash/Nagad/bank payout fee schedules (published partner or MFS pricing pages); expected shape: {payout, fee, url}"
+    },
+    "govt_incentive_rate": {
+      "status": "POLICY-CITED",
+      "as_of": null,
+      "source_needed": "Bangladesh Bank SME & Remittance Department circulars — # SOURCE NEEDED: exact circular number + URL before quoting on camera"
+    },
+    "platform_fee_source": {
+      "status": "PRODUCT-DECISION",
+      "as_of": null,
+      "source_needed": "Confirmed commercial fee schedule (docs/unit-economics.md)"
+    }
   },
   "govt_incentive_rate": 0.025,
   "govt_incentive_note": "Bangladesh Bank SME & Remittance Department circulars: 2.5% cash incentive on formal remittance",
@@ -39,7 +72,9 @@
       "fee_source": 3.0,
       "hours": 2.0,
       "success_rate": 0.98,
-      "incentive_eligible": true
+      "incentive_eligible": true,
+      "source_class": "scenario assumption",
+      "source_note": "anchor-based rail pricing is not yet sourced from a real anchor provider; treated as a scenario in docs/stellar-sensitivity.md"
     },
     {
       "name": "Exchange House MTO",
@@ -60,7 +95,9 @@
         "AED",
         "USD",
         "BDT"
-      ]
+      ],
+      "source_class": "scenario assumption",
+      "source_note": "anchor-based rail pricing is not yet sourced from a real anchor provider; treated as a scenario in docs/stellar-sensitivity.md"
     },
     {
       "name": "Cash Pickup Agent (teaser rate)",
@@ -69,7 +106,7 @@
       "hours": 1.0,
       "success_rate": 0.9,
       "incentive_eligible": false,
-      "note": "Sample promotional rail: aggressive near-mid-market FX (fastest, best headline FX of all rails) but the channel does not qualify for the government incentive \u2014 demonstrates the eligibility flag changing the winner."
+      "note": "Sample promotional rail: aggressive near-mid-market FX (fastest, best headline FX of all rails) but the channel does not qualify for the government incentive — demonstrates the eligibility flag changing the winner."
     }
   ],
   "payout_methods": [

@@ -2,11 +2,11 @@
 
 Every number below is **computed from this repository** — corridor math, eval sets, or timed runs. `GET /metrics` returns these values (computed once per process, cached). Curated-benchmark numbers are labeled as such and must never be presented as production statistics. **All targets are internal targets**, not external benchmarks — the one external comparison sits in "Public baseline" below.
 
-| KPI | Measured (2026-10-24) | Internal target | How it is computed |
+| KPI | Measured (re-verified 2026-10-28) | Internal target | How it is computed |
 | :--- | ---: | :--- | :--- |
 | `net_receive_uplift_pct` | **3.05%** | ≥ 3.0% | AED 1,000 → BKASH: best-route True Net Receive **incl. xPay's AED 2 platform fee** (৳33,423.20) vs the legacy counterfactual — same SWIFT rail WITHOUT the platform fee (৳32,432.40) = ৳990.80 / 32,432.40 |
 | `intent_accuracy_pct` | **100.0%** | ≥ 95% | Full-field match (amount, currency, payout, recipient, language) on **49 curated utterances** in en/bn/ar — `backend/data/intent_eval.json`. Parser fixed during measurement: longest-match-first relation extraction, Arabic "بنك", Bengali relation inflections |
-| `p95_quote_latency_ms` | **~2–3 ms engine; 21.2 ms end-to-end HTTP** | ≤ 3,000 ms | engine: 20 in-process quote runs (`GET /metrics`); end-to-end: 300-request loopback load test (`scripts/load_test_p95.py` → `reports/load_test.txt`) |
+| `p95_quote_latency_ms` | **21.2 ms end-to-end HTTP** | ≤ 3,000 ms | 300-request loopback load test (`scripts/load_test_p95.py` → `reports/load_test.txt`). The engine-only number is deliberately NOT quoted as a KPI — the end-to-end HTTP figure is the honest user-facing one |
 | `false_positive_hold_rate_pct` | **0.0%** | ≤ 2.0% | 21 known-clear names screened against the sample SDN list — none flagged (`data/sanctions_eval.json`) |
 | `ofac_recall_pct` | **100.0%** | 100% | 11 exact/leet true hits BLOCKED + 4 alias-only, 15 near-variants, 5 single-token, 2 unscreenable all REVIEWED on the 58-case benchmark (`make eval-sanctions`) |
 
@@ -49,15 +49,17 @@ we say so.
 
 | category | n | decisions |
 | :--- | ---: | :--- |
-| exact_normalized (true hits) | 14 | 14 BLOCKED |
-| near_variant (added names, transliterations) | 14 | 14 REVIEW |
+| exact_normalized (true hits) | 11 | 11 BLOCKED |
+| alias_only (personal-name aliases, e.g. Md/Mohammed) | 4 | 4 REVIEW, 0 BLOCKED |
+| near_variant (added names, transliterations) | 15 | 15 REVIEW |
 | single_token | 5 | 5 REVIEW, **0 BLOCKED** |
+| unscreenable (normalize to nothing) | 2 | 2 REVIEW |
 | clear | 21 | 21 CLEAR |
 
-Recall 100% · FPR 0% · FNR 0% · block precision 100%. The v1 benchmark's "0%
+Recall 100% · FPR 0% · FNR 0% · block precision 100% on the **58-case v4
+benchmark** (`data/sanctions_eval.json`). The v1 benchmark's "0%
 false positives" was meaningless (deliberate misspellings + unrelated names);
-v2 adds realistic variants and the reviewer's 30-second repro now produces
-sensible decisions.
+v4 adds alias-only and unscreenable categories with explicit policy decisions.
 
 ## GNN evaluation (`backend/ml/eval.json`, produced by `make train-gnn`)
 
@@ -74,6 +76,8 @@ sensible decisions.
 | Enable | `USE_TRAINED_GNN=true`; otherwise the deterministic stand-in serves — identical API shape |
 
 Honesty notes for judges: the GNN benchmark is synthetic; the intent benchmark
-is curated; latency is engine-only; sanctions list is a 10-entry sample. All
-four statements appear in `/metrics` output and in this file. Replace eval sets
-with labeled production history before any real deployment.
+is curated; the latency figure is end-to-end HTTP on loopback (not
+production-network latency); the sanctions benchmark is a 58-case curated set
+built on a 10-entry local list sample. All four statements appear in `/metrics`
+output and in this file. Replace eval sets with labeled production history
+before any real deployment.

@@ -9,6 +9,7 @@ sys.path.insert(0, str(BACKEND))
 
 from app.agent import orchestrator  # noqa: E402
 from app.services import compliance, routing_scorer  # noqa: E402
+from app.services.money import D, quantize  # noqa: E402
 from app.services.horizon import probe  # noqa: E402
 
 
@@ -74,6 +75,16 @@ class TestEVRanking(unittest.TestCase):
             "quote", text="Send 1,000 dirhams urgently to my mother's bKash in Dhaka")
         self.assertEqual(state["parsed_intent"]["deadline_hours"], 3.0)
         self.assertTrue(all(r["settlement_time_hrs"] <= 3 for r in state["routes"]))
+
+    def test_reliability_adjusted_net_equals_net_times_success_rate(self):
+        """B2 identity: the ranking metric is EXACTLY displayed_net x success_rate
+        for every route in the default quote (exact-decimal, no drift)."""
+        for r in routing_scorer.score_routes(1000, "BKASH"):
+            expected = quantize(
+                D(str(r["breakdown"]["true_net_receive_bdt"])) * D(str(r["success_rate"])),
+                "BDT")
+            self.assertEqual(D(str(r["reliability_adjusted_net_exact"])), expected, r["name"])
+            self.assertEqual(r["reliability_adjusted_net"], float(expected), r["name"])
 
     def test_multi_hop_present(self):
         routes = routing_scorer.score_routes(1000, "BKASH")

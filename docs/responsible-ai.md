@@ -31,7 +31,7 @@ the claim-by-claim truth table lives in [REAL_VS_SIMULATED.md](../REAL_VS_SIMULA
 | Recall on true list hits | 100% (11/11, exact + leet) | `make eval-sanctions` |
 | Alias-only equalities auto-blocked | 0 (policy: review) | `make eval-sanctions` |
 | False-positive rate on clear names | 0.0% (0/21) | `make eval-sanctions` |
-| Review volume on common names | 8 reviews / 1,000 transfers | `reports/review_volume.json` |
+| Review volume on common names | 0 reviews / 1,000 transfers (500-transfer run, 10-entry local list) — was 8/1,000 before the token-floor fix removed spurious common-name reviews. Against the **real OFAC SDN file** (19,484 entries, downloaded 2026-10-28, see `data/sources.md`): **40 reviews / 1,000 parties** on a 100-party sample — the real-list workload is the honest planning number | `reports/review_volume.json` |
 | GNN false-hold rate | 0.0% on the labeled eval set | `GET /metrics` |
 
 ## When the gate is wrong: the appeals path
