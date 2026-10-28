@@ -59,6 +59,10 @@ def score_routes(amount_source, payout_method: str = "BKASH",
         # rail + last-mile only: the platform fee is passed to the engine
         # separately (platform_fee_source) so it is added exactly once and
         # stays a visible line item.
+        # B2: there are TWO engine calls below (exact for ranking, display for
+        # the breakdown) — "the first call" is ambiguous, and the platform fee
+        # is intentionally passed to BOTH so the ranking and the displayed
+        # breakdown can never disagree.
         fee_total = None if rail_fee is None else D(rail_fee) + D(lm_fee)
         hours = rail["hours"] + extra_h
         success = D(rail["success_rate"]) * D(succ)
@@ -67,6 +71,7 @@ def score_routes(amount_source, payout_method: str = "BKASH",
             amount, rail["fx"], fee_total, route=name, settlement_time_hrs=hours,
             currency_source=src_ccy, dest_currency=dest_ccy,
             govt_incentive_rate=corridor["govt_incentive_rate"] if eligible else 0.0,
+            platform_fee_source=platform_fee,
         )
         pricing_ok = not priced["incomplete"]
         net = priced["values"]["true_net_dest"]
