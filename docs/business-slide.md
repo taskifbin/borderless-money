@@ -20,7 +20,7 @@ alone leaves most of that on the table.
 | :--- | ---: | :--- |
 | Net-receive uplift vs legacy SWIFT (headline) | **+3.05%** | corridor math, `GET /metrics` · [docs/kpis.md](kpis.md) |
 | Pessimistic anchor-pricing case | **+2.59%** (table range +2.59–3.63%) | [docs/stellar-sensitivity.md](stellar-sensitivity.md) |
-| 1,000-transfer simulation | **+3.53% mean** (1.57–11.08%) | `reports/simulation_1000.json` |
+| 1,000-transfer simulation | **+3.53% mean** (1.57–11.08%) | `reports/simulation_1000.json` — fee-only ranking picks the ineligible promo rail on every transfer (100% disagreement with EV ranking); that gap is the incentive value |
 | xPay consumer fee | **AED 2.00 flat**, shown as a line item | product decision · [docs/unit-economics.md](unit-economics.md) |
 | B2B (Remittance-as-a-Service) price | **0.15% take rate on principal** | product decision · [docs/unit-economics.md](unit-economics.md) |
 | Cost per transfer | **AED 0.16** (infra 0.06 · FX 0.03 · screening 0.02 · settlement/audit 0.05) | [docs/unit-economics.md](unit-economics.md) |

@@ -313,6 +313,13 @@ Full request/response JSON: [docs/api-contracts.md](docs/api-contracts.md)
 
 Definitions & honesty notes: [docs/kpis.md](docs/kpis.md)
 
+About the simulation row: in all 1,000 synthetic transfers, fee-only and
+cost-only ranking pick the incentive-ineligible promo rail (it has the lowest
+fee), so incentive-aware EV ranking disagrees on **100% of transfers** — that
+disagreement is exactly the 2.5% incentive being computed into the route
+choice. Amounts/payout mix are synthetic assumptions; the pricing is the real
+engine (`reports/simulation_1000.json`).
+
 ## 🧩 Upgrade highlights (Oct 25 — B2B + financial-integrity pass)
 
 - **Exact-decimal money engine** — all monetary arithmetic in `Decimal` (`services/money.py`); half-up rounding at display edges, exact `*_exact` strings in every breakdown, NaN/garbage rejected, missing fees flagged (never zeroed) and such routes barred from winning *and* settling.
