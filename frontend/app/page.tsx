@@ -56,7 +56,6 @@ function Brand() {
       <div>
         <p className="text-base font-extrabold tracking-tight text-white flex items-center gap-1">
           x<span className="text-amber-400">Pay</span>
-          <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-400/10 text-amber-300 border border-amber-400/20">AI</span>
         </p>
         <p className="text-[10px] text-slate-400 font-medium">Agentic Remittance</p>
       </div>
